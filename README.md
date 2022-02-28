@@ -1,4 +1,4 @@
-# The MILOLab Database for spatially resolved Transcriptomic data
+# The MILOLab Database for spatially resolved transcriptomic data
 
 
 Here, we provide a database for spatially resolved transcriptomic data that were curated by the MILO Lab and patners. The data are from different studies across various projects. If any data were used for publications, datasets need to be specificly cited in accordance to their publication.
