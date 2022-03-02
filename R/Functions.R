@@ -110,6 +110,30 @@ CleanObject <- function(object){
 }
 
 
+#' @title  AddSourceFile
+#' @author Dieter Henrik Heiland
+#' @description AddSourceFile
+#' @inherit 
+#' @return 
+#' @examples 
+#' 
+#' @export
+#'
+
+AddSourceFile <- function(source.csv){
+  
+  path <- system.file("data", "source.csv", package = "SPATAData")
+  source <- read_csv(source.csv,sep=";")
+  write.table(source, file=path, sep=";")
+  
+}
+
+
+
+
+
+
+
 
 
 
