@@ -13,7 +13,7 @@ Data can be used within the SPATA2 package. More info: https://themilolab.github
 
 ```
 library(devtools)
-devtools::install_github("heilandd/SPATAData")
+devtools::install_github("theMILOlab/SPATAData")
 ```
 
 If you want to get an overview of all avaiable datasets and metadata:
