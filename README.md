@@ -26,9 +26,9 @@ Datasets can be downloaded by:
 
 ```
 #Download a/or more samples
-get.data <- SPATAData::getData(sample.name = "#UKF334_T")
+get.data <- SPATAData::getData(sample.name = "275_T")
 #Load data 
-object <- SPATAData::loadData(sample.name = "#UKF334_T", folder=get.data[[1]])
+object <- SPATAData::loadData(sample.name = "275_T", folder=get.data[[1]])
 
 ```
 
