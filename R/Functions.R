@@ -30,7 +30,7 @@ getData <- function(sample.name, folder=NULL){
 # Check if sample name is part of the listed data ------------------------
 
   
-  data <- SPATAData::list.data() %>% filter(sample %in% sample.name)
+  data <- SPATAData::list.data() %>% dplyr::filter(Sample %in% sample.name)
   
   if(nrow(data)!=0){
     
@@ -38,7 +38,7 @@ getData <- function(sample.name, folder=NULL){
       
       #Set parameters
       link <- data[i, "link"]
-      name <- data[i, "sample"]
+      name <- data[i, "Sample"]
       localisation <- paste0(folder,"/",name)
       
       utils::download.file(link, paste0(name, ".RDS") )
