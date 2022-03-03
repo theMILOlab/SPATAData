@@ -124,7 +124,7 @@ AddSourceFile <- function(source.csv){
   
   message(paste0(Sys.time()," ---- Source file will be updated ---- "))
   path <- system.file("data", "source.csv", package = "SPATAData")
-  source <- read_csv(source.csv,sep=";")
+  source <- read.csv(source.csv,sep=";")
   write.table(source, file=path, sep=";")
   
 }
