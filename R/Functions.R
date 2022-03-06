@@ -58,7 +58,7 @@ getData <- function(sample.name, folder=NULL, type="SPATA"){
   }else{
     if(type=="RAW"){
       
-      data <- SPATAData::list.data() %>% dplyr::filter(Sample %in% sample.name) %>% dplyr::filter(type=="RAE")
+      data <- SPATAData::list.data() %>% dplyr::filter(Sample %in% sample.name) %>% dplyr::filter(type=="RAW")
       
       if(nrow(data)!=0){
         
@@ -69,7 +69,7 @@ getData <- function(sample.name, folder=NULL, type="SPATA"){
           name <- data[i, "Sample"]
           localisation <- paste0(folder,"/",name)
           
-          utils::download.file(link, paste0(name, ".RDS") )
+          utils::download.file(link, paste0(name, ".zip") )
           
           out <- data.frame(sample.name=name, localisation=localisation)
           return(out)
