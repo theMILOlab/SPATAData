@@ -1,6 +1,7 @@
 #' @title  getData
 #' @author Dieter Henrik Heiland
 #' @description getData
+#' @param type Can be either 'SPATA' to download the Spata objects or 'RAW' for access the raw data 
 #' @inherit 
 #' @return 
 #' @examples 
@@ -8,7 +9,7 @@
 #' @export
 #' 
 
-getData <- function(sample.name, folder=NULL){
+getData <- function(sample.name, folder=NULL, type="SPATA"){
   
   org.wd <- getwd()
   
@@ -26,11 +27,14 @@ getData <- function(sample.name, folder=NULL){
   setwd(folder)
   message(paste0(Sys.time()," ---- Downloads will be in the: ", folder, " folder ---- "))
   
+  
+  
 
 # Check if sample name is part of the listed data ------------------------
 
+  if (type=="SPATA"){
   
-  data <- SPATAData::list.data() %>% dplyr::filter(Sample %in% sample.name)
+  data <- SPATAData::list.data() %>% dplyr::filter(Sample %in% sample.name) %>% dplyr::filter(type=="SPATA")
   
   if(nrow(data)!=0){
     
@@ -49,9 +53,40 @@ getData <- function(sample.name, folder=NULL){
     })
     
   }else{" No match between sample.name and the listed data were found. Please use a valid sample.name/s"}
- 
-  setwd(org.wd)
   return(list(folder, out)) 
+  
+  }else{
+    if(type=="RAW"){
+      
+      data <- SPATAData::list.data() %>% dplyr::filter(Sample %in% sample.name) %>% dplyr::filter(type=="RAE")
+      
+      if(nrow(data)!=0){
+        
+        out <- purrr::map_df(.x=1:nrow(data), .f=function(i){
+          
+          #Set parameters
+          link <- data[i, "link"]
+          name <- data[i, "Sample"]
+          localisation <- paste0(folder,"/",name)
+          
+          utils::download.file(link, paste0(name, ".RDS") )
+          
+          out <- data.frame(sample.name=name, localisation=localisation)
+          return(out)
+          
+        })
+        
+      }else{" No match between sample.name and the listed data were found. Please use a valid sample.name/s ...  or raw data of samples not in source file"}
+      
+      return(list(folder, out)) 
+      
+    }else{message("Type undefined")}
+  }
+  
+  setwd(org.wd)
+  
+  
+  
 }
 
 
