@@ -4,7 +4,7 @@
 \alias{loadData}
 \title{list.data}
 \usage{
-loadData(sample.name, folder)
+loadData(sample_name, folder)
 }
 \value{
 

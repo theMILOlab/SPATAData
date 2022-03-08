@@ -9,7 +9,7 @@
 #' @export
 #' 
 
-getData <- function(sample.name, folder=NULL, type="SPATA"){
+getData <- function(sample_name, folder=NULL, type="SPATA"){
   
   org.wd <- getwd()
   
@@ -34,7 +34,7 @@ getData <- function(sample.name, folder=NULL, type="SPATA"){
 
   if (type=="SPATA"){
   
-  data <- SPATAData::list.data() %>% dplyr::filter(Sample %in% sample.name) %>% dplyr::filter(type=="SPATA")
+  data <- SPATAData::list.data() %>% dplyr::filter(Sample %in% sample_name) %>% dplyr::filter(type=="SPATA")
   
   if(nrow(data)!=0){
     
@@ -47,18 +47,18 @@ getData <- function(sample.name, folder=NULL, type="SPATA"){
       
       utils::download.file(link, paste0(name, ".RDS") )
       
-      out <- data.frame(sample.name=name, localisation=localisation)
+      out <- data.frame(sample_name=name, localisation=localisation)
       return(out)
       
     })
     
-  }else{" No match between sample.name and the listed data were found. Please use a valid sample.name/s"}
+  }else{" No match between sample_name and the listed data were found. Please use a valid sample_name/s"}
   return(list(folder, out)) 
   
   }else{
     if(type=="RAW"){
       
-      data <- SPATAData::list.data() %>% dplyr::filter(Sample %in% sample.name) %>% dplyr::filter(type=="RAW")
+      data <- SPATAData::list.data() %>% dplyr::filter(Sample %in% sample_name) %>% dplyr::filter(type=="RAW")
       
       if(nrow(data)!=0){
         
@@ -71,12 +71,12 @@ getData <- function(sample.name, folder=NULL, type="SPATA"){
           
           utils::download.file(link, paste0(name, ".zip") )
           
-          out <- data.frame(sample.name=name, localisation=localisation)
+          out <- data.frame(sample_name=name, localisation=localisation)
           return(out)
           
         })
         
-      }else{" No match between sample.name and the listed data were found. Please use a valid sample.name/s ...  or raw data of samples not in source file"}
+      }else{" No match between sample_name and the listed data were found. Please use a valid sample_name/s ...  or raw data of samples not in source file"}
       
       return(list(folder, out)) 
       
@@ -84,8 +84,6 @@ getData <- function(sample.name, folder=NULL, type="SPATA"){
   }
   
   setwd(org.wd)
-  
-  
   
 }
 
@@ -100,9 +98,9 @@ getData <- function(sample.name, folder=NULL, type="SPATA"){
 #' 
 #' @export
 #' 
-loadData <- function(sample.name, folder){
+loadData <- function(sample_name, folder){
   
-  file <- paste0(folder, "/", sample.name, ".RDS")
+  file <- paste0(folder, "/", sample_name, ".RDS")
   
   if(file.exists(file)){readRDS(file)}else{"Sample is not in the download folder"}
   
@@ -119,7 +117,7 @@ loadData <- function(sample.name, folder){
 #' 
 #' @export
 #' 
-list.data <- function(){read.csv(system.file("data", "source.csv", package = "SPATAData"), sep=";")}
+list.data <- function(){utils::read.csv(system.file("data", "source.csv", package = "SPATAData"), sep=";")}
 
 
 #' @title  CleanObject
@@ -132,7 +130,7 @@ list.data <- function(){read.csv(system.file("data", "source.csv", package = "SP
 #' @export
 #'
 
-CleanObject <- function(object){
+cleanObject <- function(object){
   
   message(paste0(Sys.time()," ---- Remove all slots with processed data ---- "))
   
@@ -155,30 +153,15 @@ CleanObject <- function(object){
 #' @export
 #'
 
-AddSourceFile <- function(source.csv){
+addSourceFile <- function(source.csv){
   
-  message(paste0(Sys.time()," ---- Source file will be updated ---- "))
-  path <- system.file("data", "source.csv", package = "SPATAData")
-  source <- read.csv(source.csv,sep=";")
-  write.table(source, file=path, sep=";")
+  message(base::paste0(Sys.time()," ---- Source file will be updated ---- "))
+  path <- base::system.file("data", "source.csv", package = "SPATAData")
+  source <- utils::read.csv(source.csv,sep=";")
+  utils::write.table(source, file=path, sep=";")
   
 }
 
-
-#' Convert \code{data.frame} to \code{list}.
-#' 
-#' @importFrom magrittr %>%
-#' @name %>%
-#' @rdname pipe
-#' @export
-#' @param x A \code{data.frame} object.
-#' @examples
-#' my_result <- foo(iris)
-#'
-foo <- function(x) {
-  x %>%
-    as.list()
-}
 
 
 
