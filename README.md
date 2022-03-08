@@ -2,7 +2,7 @@
 
 !! As long as data is not published we share data in collaboration projects, please request a source file with the corresponding links (dieter.henrik.heiland@uniklinik-freiburg.de) !!
 
-Here, we provide a database for spatially resolved transcriptomic data that was curated by the MILO Lab and partners. The data derives from different studies across various projects. If any data is used for publications, datasets need to be specifically cited in accordance to their publication.See
+Here, we provide a database for spatially resolved transcriptomic data that was curated by the MILO Lab and partners. The data derives from different studies across various projects. If any data is used for publications, datasets need to be specifically cited in accordance to their publication. See
 instructions on citing down below.
 
 Downloaded spata objects can be used within the SPATA2 package. More info: https://themilolab.github.io/SPATA2/
