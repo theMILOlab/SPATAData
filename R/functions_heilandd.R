@@ -178,7 +178,7 @@ addSourceFile <- function(source.csv){
   utils::write.table(source_df, file=path, sep=";")
   save(source_df, file = paste0(base::system.file("data", package = "SPATAData"), "/source_df.rda"))
 
-  return(source_df[1:2,1:4)
+  return(source_df[1:2,1:4])
   
 }
 
