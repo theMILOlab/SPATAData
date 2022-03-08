@@ -12,7 +12,7 @@ Downloaded spata objects can be used within the SPATA2 package. More info: https
 ```
 library(devtools)
 
-devtools::install_github("kueckel/confuns")
+devtools::install_github("kueckelj/confuns")
 devtools::install_github("theMILOlab/SPATAData")
 
 ```
