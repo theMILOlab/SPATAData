@@ -16,5 +16,7 @@ whole raw 10X Visium data sets.}
 Character vector.
 }
 \description{
-
+Returns the sample names of the samples that you can download
+via \code{downloadSpataObject()}, \code{downloadSpataObject()}, 
+\code{downloadRawData()}.
 }

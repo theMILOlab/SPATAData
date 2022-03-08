@@ -25,10 +25,9 @@ is_creatable <- function(file){
 
 #' @title Valid sample names
 #'
-#' @description Returns the sample names
-#' of the samples that you can download
+#' @description Returns the sample names of the samples that you can download
 #' via \code{downloadSpataObject()}, \code{downloadSpataObject()}, 
-#' \code{downloadRawData().
+#' \code{downloadRawData()}.
 #' 
 #' @param type Character value. If \emph{'SPATA'} returns valid input
 #' options when it comes to download spata objects. If \emph{'RAW'}
@@ -252,7 +251,7 @@ downloadSpataObject <- function(sample_name,
     verbose = verbose
   )
 
-  downloaded_object <- updateSpataObject(downloaded_object)
+  downloaded_object <- SPATA2::updateSpataObject(downloaded_object)
 
   citation <-
     dplyr::filter(source_df, Sample == {{sample_name}}) %>%
@@ -264,7 +263,7 @@ downloadSpataObject <- function(sample_name,
   if(base::is.character(file)){
 
     downloaded_object <-
-      adjustDirectoryInstructions(
+      SPATA2::adjustDirectoryInstructions(
         object = downloaded_object,
         to = "spata_object",
         directory_new = directory_spata
@@ -423,7 +422,7 @@ downloadSpataObjects <- function(sample_names,
             base::readRDS() %>%
             {if(base::isTRUE(update)){
 
-              updateSpataObject(., verbose = verbose)
+              SPATA2::updateSpataObject(., verbose = verbose)
 
             } else {
 
