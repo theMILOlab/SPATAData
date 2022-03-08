@@ -110,7 +110,35 @@ loadData <- function(sample_name, folder){
 #' 
 #' @export
 #' 
-list.data <- function(){utils::read.csv(system.file("data", "source.csv", package = "SPATAData"), sep=";")}
+list.data <- function(){
+  
+  out <- 
+    base::tryCatch({
+      
+      utils::read.csv(
+        file = base::system.file("data", "source.csv", package = "SPATAData"),
+        sep = ";"
+        )
+      
+    }, error = function(error){
+      
+      NULL
+      
+    })
+  
+  if(base::is.data.frame(out)){
+    
+    out_df <- out 
+    
+  } else {
+    
+    out_df <- source_df
+    
+  }
+  
+  return(out_df)
+  
+  }
 
 
 #' @title  CleanObject

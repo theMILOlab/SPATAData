@@ -17,3 +17,5 @@ Imports:
     glue,
     purrr,
     stringr
+Depends: 
+    R (>= 2.10)
