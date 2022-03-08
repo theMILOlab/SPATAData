@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions_kueckelj.R
 \name{validSampleNames}
 \alias{validSampleNames}
-\title{Valid spata object names}
+\title{Valid sample names}
 \usage{
 validSampleNames(type = "SPATA")
 }
@@ -16,7 +16,5 @@ whole raw 10X Visium data sets.}
 Character vector.
 }
 \description{
-Returns the sample names
-of the spata objects that you can download
-via \code{downloadSpataObject()} and \code{downloadSpataObject()}.
+
 }

@@ -23,11 +23,12 @@ is_creatable <- function(file){
 }
 
 
-#' @title Valid spata object names
+#' @title Valid sample names
 #'
 #' @description Returns the sample names
-#' of the spata objects that you can download
-#' via \code{downloadSpataObject()} and \code{downloadSpataObject()}.
+#' of the samples that you can download
+#' via \code{downloadSpataObject()}, \code{downloadSpataObject()}, 
+#' \code{downloadRawData().
 #' 
 #' @param type Character value. If \emph{'SPATA'} returns valid input
 #' options when it comes to download spata objects. If \emph{'RAW'}

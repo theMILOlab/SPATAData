@@ -8,7 +8,8 @@ downloadRawData(
   sample_names,
   folder = base::getwd(),
   overwrite = FALSE,
-  verbose = TRUE
+  verbose = TRUE,
+  ...
 )
 }
 \arguments{
