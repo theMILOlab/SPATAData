@@ -53,7 +53,7 @@ object <- downloadSpataObject(sample_name = "275_T")
 
 # Downloads multiple spata objects at the same time  
 
-downloadSpataObjects(sample_names = c("275_T", ""))
+downloadSpataObjects(sample_names = c("275_T", "334_T"))
 
 ```
 
