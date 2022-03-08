@@ -132,7 +132,7 @@ list.data <- function(){
     
   } else {
     
-    out_df <- source_df
+    out_df <- source_df %>% tibble::as_tibble()
     
   }
   

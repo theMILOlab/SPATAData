@@ -341,6 +341,12 @@ downloadSpataObjects <- function(sample_names,
     input = sample_names,
     against = base::unique(data_df$Sample)
   )
+  
+  if(!base::dir.exists(folder)){
+    
+    base::dir.create(path = folder, recursive = TRUE)
+    
+  }
 
   if(base::is.null(files)){
 

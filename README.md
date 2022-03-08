@@ -19,8 +19,9 @@ devtools::install_github("theMILOlab/SPATAData")
 
 ```
 
-# load package
+# load both packages!
 library(SPATAData)
+library(SPATA2)
 
 ```
 
@@ -43,7 +44,7 @@ validSampleNames()
 
 ## Downloading
 
-Datasets can be downloaded via: 
+S4 spata objects can be downloaded via: 
 
 ```
 # Downloads single spata objects, saves them on your device and immediately
@@ -53,7 +54,14 @@ object <- downloadSpataObject(sample_name = "275_T")
 
 # Downloads multiple spata objects at the same time  
 
-downloadSpataObjects(sample_names = c("275_T", "334_T"))
+downloadSpataObjects(sample_names = c("275_T", "334_T"), folder = "objects")
+
+```
+
+Raw 10X Visium output can be downloaded via:
+
+```
+downloadRawData(sample_names = c("275_T", "334_T"), folder = "raw_data")
 
 ```
 
