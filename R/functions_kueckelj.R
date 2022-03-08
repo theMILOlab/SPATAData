@@ -170,21 +170,21 @@ downloadSpataObject <- function(sample_name,
 
   confuns::is_value(x = overwrite, mode = "logical")
 
-  data_df <- list(...)[["data_df"]]
+  source_df <- list(...)[["source_df"]]
 
-  if(base::is.null(data_df)){
+  if(base::is.null(source_df)){
 
-    data_df <- list.data()
+    source_df <- list.data()
 
   }
 
   confuns::check_one_of(
     input = sample_name,
-    against = base::unique(data_df$Sample)
+    against = base::unique(source_df$Sample)
   )
 
   download_dir <-
-    dplyr::filter(data_df, Sample == {{sample_name}}) %>%
+    dplyr::filter(source_df, Sample == {{sample_name}}) %>%
     dplyr::filter(type == "SPATA") %>%
     dplyr::pull(link)
 
@@ -247,14 +247,14 @@ downloadSpataObject <- function(sample_name,
     base::readRDS()
 
   confuns::give_feedback(
-    msg = "Download successfull.",
+    msg = "Download successful.",
     verbose = verbose
   )
 
   downloaded_object <- updateSpataObject(downloaded_object)
 
   citation <-
-    dplyr::filter(data_df, Sample == {{sample_name}}) %>%
+    dplyr::filter(source_df, Sample == {{sample_name}}) %>%
     dplyr::pull(Citation) %>%
     base::unique()
 
@@ -319,11 +319,11 @@ downloadSpataObjects <- function(sample_names,
 
   confuns::is_value(x = folder, mode = "character", skip.allow = TRUE, skip.val = NULL)
 
-  data_df <- list(...)[["data_df"]]
+  source_df <- list(...)[["source_df"]]
 
-  if(base::is.null(data_df)){
+  if(base::is.null(source_df)){
 
-    data_df <- list.data()
+    source_df <- list.data()
 
   }
 
@@ -339,7 +339,7 @@ downloadSpataObjects <- function(sample_names,
 
   confuns::check_one_of(
     input = sample_names,
-    against = base::unique(data_df$Sample)
+    against = base::unique(source_df$Sample)
   )
   
   if(!base::dir.exists(folder)){
@@ -404,11 +404,11 @@ downloadSpataObjects <- function(sample_names,
         .f = function(sample, file){
 
           download_dir <-
-            dplyr::filter(data_df, Sample == {{sample}} & type == "SPATA") %>%
+            dplyr::filter(source_df, Sample == {{sample}} & type == "SPATA") %>%
             dplyr::pull(link)
 
           citation <-
-            dplyr::filter(data_df, Sample == {{sample}} & type == "SPATA") %>%
+            dplyr::filter(source_df, Sample == {{sample}} & type == "SPATA") %>%
             dplyr::pull(Citation) %>%
             base::unique()
 
@@ -489,7 +489,8 @@ downloadSpataObjects <- function(sample_names,
 downloadRawData <- function(sample_names,
                             folder = base::getwd(),
                             overwrite = FALSE,
-                            verbose = TRUE){
+                            verbose = TRUE, 
+                            ...){
 
   confuns::is_value(x = folder, mode = "character", skip.allow = TRUE, skip.val = NULL)
 
@@ -520,6 +521,15 @@ downloadRawData <- function(sample_names,
 
   }
 
+  
+  source_df <- list(...)[["source_df"]]
+  
+  if(base::is.null(source_df)){
+    
+    source_df <- list.data()
+    
+  }
+  
   out <-
     purrr::map(
       .x = sample_names,
@@ -527,7 +537,7 @@ downloadRawData <- function(sample_names,
         .f = function(sample){
 
           download_dir <-
-            dplyr::filter(.data = list.data(), Sample == {{sample}} & type == "RAW") %>%
+            dplyr::filter(.data = source_df, Sample == {{sample}} & type == "RAW") %>%
             dplyr::pull(link)
 
           confuns::give_feedback(
