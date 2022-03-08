@@ -28,13 +28,20 @@ is_creatable <- function(file){
 #' @description Returns the sample names
 #' of the spata objects that you can download
 #' via \code{downloadSpataObject()} and \code{downloadSpataObject()}.
+#' 
+#' @param type Character value. If \emph{'SPATA'} returns valid input
+#' options when it comes to download spata objects. If \emph{'RAW'}
+#' returns valid input options when it comes to download 
+#' whole raw 10X Visium data sets.
 #'
 #' @return Character vector.
 #' @export
 #'
-validSampleNames <- function(){
+validSampleNames <- function(type = "SPATA"){
 
-  list.data()$Sample %>%
+  list.data() %>%
+    dplyr::filter(type == {{type}}) %>% 
+    dplyr::pull(Sample) %>% 
     base::unique()
 
 }
@@ -46,7 +53,7 @@ validSampleNames <- function(){
 #' @description Sets information about how to cite this
 #' spata object.
 #'
-#' @inherit argument_dummy params
+#' @inherit SPATA2::argument_dummy params
 #' @param citation Character value.
 #'
 #' @return An updated spata object.
@@ -69,7 +76,7 @@ setCitation <- function(object, citation){
 #' form of citation to give credits to the researchers who
 #' made this data available
 #'
-#' @inherit argument_dummy params
+#' @inherit SPATA2::argument_dummy params
 #' @param sample_names Character vector of sample names for which
 #' you want to obtain the correct citation.
 #'
@@ -122,9 +129,8 @@ getCitationBySample <- function(sample_names = validSampleNames()){
 
 #' @title Download spata objects
 #'
-#' @description Downloads spata objects from the internet and saves them
-#' on your device. See details for more information about the differences
-#' between \code{downloadSpataObject()} and \code{downloadSpataObjects()}.
+#' @description Downloads a spata object and returns it. For convenient
+#' downloads of multiple spata objects check out \code{downloadSpataObjects()}. 
 #'
 #' @param sample_name Character value. The name of the sample you want to
 #' download. Use \code{validSampleNames()} to obtain all valid input options.
@@ -136,7 +142,7 @@ getCitationBySample <- function(sample_names = validSampleNames()){
 #' default the file is named like the sample name. Set to NULL if you don't
 #' want the object to be saved.
 #'
-#' @inherit argument_dummy params
+#' @inherit SPATA2::argument_dummy params
 #'
 #' @details The downloaded spata object is immediately saved after the download before
 #' it is returned by the function.
@@ -279,8 +285,8 @@ downloadSpataObject <- function(sample_name,
 
 #' @title Download several spata objects
 #'
-#' @description Convenience function that downloads several spata objects
-#' at the same time.
+#' @description Main function that downloads several spata objects
+#' at the same time and saves them as an .RDS file.
 #'
 #' @param sample_names Character vector. The sample names of the spata objects
 #' to be downloaded. Use \code{validSampleNames()} to obtain all valid input options.
@@ -290,15 +296,19 @@ downloadSpataObject <- function(sample_name,
 #' according to the sample name.
 #' @inherit downloadSpataObject params
 #'
-#' @return An invisible TRUE. This function only saves spata objects. In contrast
-#' to \code{downloadSpataObject()}
+#' @return An invisible TRUE if everything worked flawlessly. 
 #'
 #' @export
 #'
 #' @examples
 #'
-#' # downloads three spata objects and stores them as "spata_data/275_T.RDS", "spata_data/313_T.RDS" etc.
-#' downloadSpataObjects(sample_names = ("275_T", "313_T", "334_T"), folder = "spata_data")
+#' # downloads three spata objects and
+#' # stores them as "spata_data/275_T.RDS", "spata_data/313_T.RDS" etc.
+#' 
+#'   downloadSpataObjects(
+#'     sample_names = ("275_T", "313_T", "334_T"),
+#'     folder = "spata_data"
+#'    )
 #'
 downloadSpataObjects <- function(sample_names,
                                  files = NULL,
@@ -435,7 +445,7 @@ downloadSpataObjects <- function(sample_names,
 
     msg <- glue::glue("Download of sample '{sample}' failed with error message: {error}")
 
-    give_feedback(msg = msg, verbose = verbose)
+    confuns::give_feedback(msg = msg, verbose = verbose)
 
   }
 
@@ -455,7 +465,7 @@ downloadSpataObjects <- function(sample_names,
 
 
 
-#' @title Download Raw data
+#' @title Download raw data
 #'
 #' @description Downloads raw Visium10X output of samples as a .zip folder.
 #'
@@ -547,7 +557,7 @@ downloadRawData <- function(sample_names,
 
     msg <- glue::glue("Download of sample '{sample}' failed with error message: {error}")
 
-    give_feedback(msg = msg, verbose = verbose)
+    confuns::give_feedback(msg = msg, verbose = verbose)
 
   }
 

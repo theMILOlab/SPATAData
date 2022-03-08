@@ -2,9 +2,7 @@
 #' @author Dieter Henrik Heiland
 #' @description getData
 #' @param type Can be either 'SPATA' to download the Spata objects or 'RAW' for access the raw data 
-#' @inherit 
 #' @return 
-#' @examples 
 #' 
 #' @export
 #' 
@@ -92,10 +90,7 @@ getData <- function(sample_name, folder=NULL, type="SPATA"){
 #' @title  list.data
 #' @author Dieter Henrik Heiland
 #' @description list.data
-#' @inherit 
 #' @return 
-#' @examples 
-#' 
 #' @export
 #' 
 loadData <- function(sample_name, folder){
@@ -111,9 +106,7 @@ loadData <- function(sample_name, folder){
 #' @title  list.data
 #' @author Dieter Henrik Heiland
 #' @description list.data
-#' @inherit 
 #' @return 
-#' @examples 
 #' 
 #' @export
 #' 
@@ -123,9 +116,7 @@ list.data <- function(){utils::read.csv(system.file("data", "source.csv", packag
 #' @title  CleanObject
 #' @author Dieter Henrik Heiland
 #' @description CleanObject
-#' @inherit 
 #' @return 
-#' @examples 
 #' 
 #' @export
 #'
@@ -146,9 +137,7 @@ cleanObject <- function(object){
 #' @title  AddSourceFile
 #' @author Dieter Henrik Heiland
 #' @description AddSourceFile
-#' @inherit 
 #' @return 
-#' @examples 
 #' 
 #' @export
 #'

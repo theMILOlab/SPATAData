@@ -1,12 +1,19 @@
 Package: SPATAData
-Title: What the Package Does (One Line, Title Case)
+Title: The MILOLab Spatial Transriptomic Database
 Version: 0.0.0.9000
 Authors@R: 
-    person("Dieter Henrik", "HEiland", , "henrik.heilamd@themilolab.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+    as.person(c(
+    "Dieter-Henrik Heiland <dr.dieter.henrik.heiland@uniklinik-freiburg.de> [aut]",
+    "Jan Kueckelhaus <jan.kueckelhaus@uniklinik-freiburg.de> [aut, cre]" 
+  ))
+Description: A package designed for convenient distribution of spatial transcriptomic data sets in form of S4 objects for the SPATA framework or in form of raw data (10X Visium output).
+RoxygenNote: 7.1.1
 Encoding: UTF-8
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.2
+LazyData: true
+License: GPL-3
+Imports: 
+    dplyr,
+    downloader,
+    glue,
+    purrr,
+    stringr
