@@ -5,7 +5,7 @@
 \alias{source_df}
 \title{Meta data and links for MILO Lab database}
 \format{
-An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 9 rows and 20 columns.
+An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 9 rows and 22 columns.
 }
 \usage{
 source_df

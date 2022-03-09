@@ -9,6 +9,8 @@
 
 getData <- function(sample_name, folder=NULL, type="SPATA"){
   
+  warning("This function is deprecated. Please use downloadSpataObject(), downloadSpataObjects() and downloadRawData()")
+  
   org.wd <- getwd()
   
   if(is.null(folder)){
@@ -173,9 +175,12 @@ cleanObject <- function(object){
 addSourceFile <- function(source.csv){
   
   message(base::paste0(Sys.time()," ---- Source file will be updated ---- "))
+  
   path <- base::system.file("data", "source.csv", package = "SPATAData")
-  source <- utils::read.csv(source.csv,sep=";")
-  utils::write.table(source, file=path, sep=";")
+  
+  source <- utils::read.csv(source.csv, sep = ";")
+  
+  utils::write.table(source, file = path, sep = ";")
   
 }
 

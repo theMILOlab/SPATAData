@@ -40,7 +40,7 @@ is_creatable <- function(file){
 validSampleNames <- function(type = "SPATA"){
 
   list.data() %>%
-    dplyr::filter(type == {{type}}) %>% 
+    dplyr::filter(Data_Type == {{type}}) %>% 
     dplyr::pull(Sample) %>% 
     base::unique()
 
@@ -185,8 +185,8 @@ downloadSpataObject <- function(sample_name,
 
   download_dir <-
     dplyr::filter(source_df, Sample == {{sample_name}}) %>%
-    dplyr::filter(type == "SPATA") %>%
-    dplyr::pull(link)
+    dplyr::filter(Data_Type == "SPATA") %>%
+    dplyr::pull(Link)
 
   if(base::is.character(file)){
 
@@ -404,11 +404,11 @@ downloadSpataObjects <- function(sample_names,
         .f = function(sample, file){
 
           download_dir <-
-            dplyr::filter(source_df, Sample == {{sample}} & type == "SPATA") %>%
-            dplyr::pull(link)
+            dplyr::filter(source_df, Sample == {{sample}} & Data_Type == "SPATA") %>%
+            dplyr::pull(Link)
 
           citation <-
-            dplyr::filter(source_df, Sample == {{sample}} & type == "SPATA") %>%
+            dplyr::filter(source_df, Sample == {{sample}} & Data_Type == "SPATA") %>%
             dplyr::pull(Citation) %>%
             base::unique()
 
@@ -496,7 +496,7 @@ downloadRawData <- function(sample_names,
 
   confuns::check_one_of(
     input = sample_names,
-    against = dplyr::filter(list.data(), type == "RAW") %>% dplyr::pull(Sample),
+    against = dplyr::filter(list.data(), Data_Type == "RAW") %>% dplyr::pull(Sample),
     fdb.opt = 2,
     ref.opt.2 = "samples for which raw data is available"
   )
@@ -537,8 +537,8 @@ downloadRawData <- function(sample_names,
         .f = function(sample){
 
           download_dir <-
-            dplyr::filter(.data = source_df, Sample == {{sample}} & type == "RAW") %>%
-            dplyr::pull(link)
+            dplyr::filter(.data = source_df, Sample == {{sample}} & Data_Type == "RAW") %>%
+            dplyr::pull(Link)
 
           confuns::give_feedback(
             msg = glue::glue("Downloading RAW data of sample '{sample}' from '{download_dir}' and storing in '{folder}'."),
