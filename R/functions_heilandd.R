@@ -175,21 +175,19 @@ cleanObject <- function(object){
 addSourceFile <- function(source.csv){
   
   message(base::paste0(Sys.time()," ---- Source file will be updated ---- "))
-  
-<<<<<<< HEAD
+
   path <- base::system.file("data", "source.csv", package = "SPATAData")
   
   source <- utils::read.csv(source.csv, sep = ";")
   
   utils::write.table(source, file = path, sep = ";")
-=======
+
   path <- paste0(base::system.file("data", package = "SPATAData"), "/source.csv")
   source_df <- utils::read.csv(source.csv,sep=";")
   utils::write.table(source_df, file=path, sep=";")
   save(source_df, file = paste0(base::system.file("data", package = "SPATAData"), "/source_df.rda"))
 
   return(source_df[1:2,1:4])
->>>>>>> 777533f6c0f4232594a5822393ee26e8d6ff6d89
   
 }
 
