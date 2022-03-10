@@ -543,21 +543,20 @@ downloadRawData <- function(sample_names,
   }
   
   out <-
-    purrr::map(
+    purrr::map2(
       .x = sample_names,
+      .y = files,
       .f = purrr::safely(
-        .f = function(sample){
+        .f = function(sample, file){
 
           download_dir <-
             dplyr::filter(.data = source_df, Sample == {{sample}} & Data_Type == "RAW") %>%
             dplyr::pull(Link)
 
           confuns::give_feedback(
-            msg = glue::glue("Downloading RAW data of sample '{sample}' from '{download_dir}' and storing in '{folder}'."),
+            msg = glue::glue("Downloading RAW data of sample '{sample}' from '{download_dir}' and saving under '{file}'."),
             verbose = verbose
           )
-
-          file <- stringr::str_c(folder, "/", sample, ".zip")
 
           downloader::download(url = download_dir, dest = file, mode = "wb")
 
