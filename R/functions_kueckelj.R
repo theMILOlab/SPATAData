@@ -487,6 +487,7 @@ downloadSpataObjects <- function(sample_names,
 #' @export
 #'
 downloadRawData <- function(sample_names,
+                            files = NULL,
                             folder = base::getwd(),
                             overwrite = FALSE,
                             verbose = TRUE, 
@@ -501,13 +502,25 @@ downloadRawData <- function(sample_names,
     ref.opt.2 = "samples for which raw data is available"
   )
 
-  if(!base::dir.exists(folder)){
+  if(base::is.character(files)){
+    
+    if(base::length(files) != base::length(sample_names)){
+      
+      stop("Number of filenames must be equal to the number of samples.")
+      
+    }
+    
+  } else if(!base::dir.exists(folder)){
 
     base::dir.create(folder, recursive = TRUE)
 
   }
-
-  files <- stringr::str_c(folder, "/", sample_names, ".zip")
+  
+  if(!base::is.character(files)){
+    
+    files <- stringr::str_c(folder, "/", sample_names, ".zip")
+    
+  }
 
   existing_files <- purrr::keep(.x = files, .p = ~ base::file.exists(.x))
 
