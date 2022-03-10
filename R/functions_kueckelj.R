@@ -495,9 +495,17 @@ downloadRawData <- function(sample_names,
 
   confuns::is_value(x = folder, mode = "character", skip.allow = TRUE, skip.val = NULL)
 
+  source_df <- list(...)[["source_df"]]
+  
+  if(base::is.null(source_df)){
+    
+    source_df <- list.data()
+    
+  }
+  
   confuns::check_one_of(
     input = sample_names,
-    against = dplyr::filter(list.data(), Data_Type == "RAW") %>% dplyr::pull(Sample),
+    against = dplyr::filter(source_df, Data_Type == "RAW") %>% dplyr::pull(Sample),
     fdb.opt = 2,
     ref.opt.2 = "samples for which raw data is available"
   )
@@ -532,15 +540,6 @@ downloadRawData <- function(sample_names,
 
     stop(glue::glue("{ref} already {ref2}. Set argument `overwrite` to TRUE to continue."))
 
-  }
-
-  
-  source_df <- list(...)[["source_df"]]
-  
-  if(base::is.null(source_df)){
-    
-    source_df <- list.data()
-    
   }
   
   out <-
