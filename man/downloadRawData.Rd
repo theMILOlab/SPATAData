@@ -6,6 +6,7 @@
 \usage{
 downloadRawData(
   sample_names,
+  files = NULL,
   folder = base::getwd(),
   overwrite = FALSE,
   verbose = TRUE,
@@ -15,6 +16,11 @@ downloadRawData(
 \arguments{
 \item{sample_names}{Character vector. The sample names of the data
 to be downloaded. Use \code{validSampleNames()} to obtain all valid input options.}
+
+\item{files}{Character vector or NULL. Specifies the file names under which the
+spata objects are saved. If character, the input must be of the same length
+as the input for argument \code{sample_names}. If NULL, the files are named
+according to the sample name.}
 
 \item{folder}{Character value. If character, specifies the output
 folder in which the spata object is saved. Defaults to the working directory.}

@@ -4,7 +4,7 @@
 \alias{validSampleNames}
 \title{Valid sample names}
 \usage{
-validSampleNames(type = "SPATA")
+validSampleNames()
 }
 \arguments{
 \item{type}{Character value. If \emph{'SPATA'} returns valid input

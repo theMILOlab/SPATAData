@@ -37,11 +37,9 @@ is_creatable <- function(file){
 #' @return Character vector.
 #' @export
 #'
-validSampleNames <- function(type = "SPATA"){
+validSampleNames <- function(){
 
-  list.data() %>%
-    dplyr::filter(Data_Type == {{type}}) %>% 
-    dplyr::pull(Sample) %>% 
+    dplyr::pull(source_df, sample) %>% 
     base::unique()
 
 }
