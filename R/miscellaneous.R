@@ -138,19 +138,25 @@ plotSampleImage <- function(sample_name, which = "lowres"){
 #' @return Data.frame.
 #' @export
 #'
-sourceDataFrame <- function(organ = NULL, status = NULL){
+sourceDataFrame <- function(organ = NULL, status = NULL, sample = NULL){
   
   df <- SPATAData::source_df
   
   if(base::is.character(organ)){
     
-    df <- dplyr::filter(df, organ == {{organ}})
+    df <- dplyr::filter(df, organ %in% {{organ}})
     
   }
   
   if(base::is.character(status)){
     
-    df <- dplyr::filter(df, status == {{status}})
+    df <- dplyr::filter(df, status %in% {{status}})
+    
+  }
+  
+  if(base::is.character(sample)){
+    
+    df <- dplyr::filter(df, sample %in% {{sample}})
     
   }
   

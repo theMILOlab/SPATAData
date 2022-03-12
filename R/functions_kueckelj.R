@@ -39,7 +39,7 @@ is_creatable <- function(file){
 #'
 validSampleNames <- function(){
 
-    dplyr::pull(source_df, sample) %>% 
+    dplyr::pull(SPATAData::source_df, sample) %>% 
     base::unique()
 
 }
@@ -112,8 +112,8 @@ getCitationBySample <- function(sample_names = validSampleNames()){
     .x = sample_names,
     .f = function(sample){
 
-      dplyr::filter(list.data(), Sample == {{sample}}) %>%
-        dplyr::pull(Citation) %>%
+      dplyr::filter(sourceDataFrame(), sample == {{sample}}) %>%
+        dplyr::pull(citation) %>%
         base::unique()
 
     }
@@ -172,7 +172,7 @@ downloadSpataObject <- function(sample_name,
 
   if(base::is.null(source_df)){
 
-    source_df <- list.data()
+    source_df <- sourceDataFrame()
 
   }
 
@@ -182,9 +182,8 @@ downloadSpataObject <- function(sample_name,
   )
 
   download_dir <-
-    dplyr::filter(source_df, Sample == {{sample_name}}) %>%
-    dplyr::filter(Data_Type == "SPATA") %>%
-    dplyr::pull(Link)
+    dplyr::filter(source_df, sample == {{sample_name}}) %>%
+    dplyr::pull(link_spata)
 
   if(base::is.character(file)){
 
@@ -252,8 +251,8 @@ downloadSpataObject <- function(sample_name,
   downloaded_object <- SPATA2::updateSpataObject(downloaded_object)
 
   citation <-
-    dplyr::filter(source_df, Sample == {{sample_name}}) %>%
-    dplyr::pull(Citation) %>%
+    dplyr::filter(source_df, sample == {{sample_name}}) %>%
+    dplyr::pull(citation) %>%
     base::unique()
 
   downloaded_object <- setCitation(downloaded_object, citation = citation)
@@ -321,7 +320,7 @@ downloadSpataObjects <- function(sample_names,
 
   if(base::is.null(source_df)){
 
-    source_df <- list.data()
+    source_df <- sourceDataFrame()
 
   }
 
@@ -402,13 +401,12 @@ downloadSpataObjects <- function(sample_names,
         .f = function(sample, file){
 
           download_dir <-
-            dplyr::filter(source_df, Sample == {{sample}} & Data_Type == "SPATA") %>%
-            dplyr::pull(Link)
+            dplyr::filter(source_df, sample == {{sample}}) %>%
+            dplyr::pull(link_spata)
 
           citation <-
-            dplyr::filter(source_df, Sample == {{sample}} & Data_Type == "SPATA") %>%
-            dplyr::pull(Citation) %>%
-            base::unique()
+            dplyr::filter(source_df, sample == {{sample}}) %>%
+            dplyr::pull(citation) 
 
           confuns::give_feedback(
             msg = glue::glue("Downloading sample {sample} from '{download_dir}'."),
@@ -497,13 +495,13 @@ downloadRawData <- function(sample_names,
   
   if(base::is.null(source_df)){
     
-    source_df <- list.data()
+    source_df <- sourceDataFrame()
     
   }
   
   confuns::check_one_of(
     input = sample_names,
-    against = dplyr::filter(source_df, Data_Type == "RAW") %>% dplyr::pull(Sample),
+    against = source_df$sample,
     fdb.opt = 2,
     ref.opt.2 = "samples for which raw data is available"
   )
@@ -548,8 +546,8 @@ downloadRawData <- function(sample_names,
         .f = function(sample, file){
 
           download_dir <-
-            dplyr::filter(.data = source_df, Sample == {{sample}} & Data_Type == "RAW") %>%
-            dplyr::pull(Link)
+            dplyr::filter(.data = source_df, sample == {{sample}}) %>%
+            dplyr::pull(link_raw)
 
           confuns::give_feedback(
             msg = glue::glue("Downloading RAW data of sample '{sample}' from '{download_dir}' and saving under '{file}'."),

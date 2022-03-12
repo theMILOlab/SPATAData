@@ -18,13 +18,13 @@ runSpataOnline <- function(object){
         shinyhelper::observe_helpers()
         
         # app start
-        sdf <- sourceDataFrame(distinct = TRUE)
+        sdf <- sourceDataFrame()
         
         spata_object <- shiny::reactiveVal(val = NULL)
         
         # Tab: Tissue-Organs ------------------------------------------------------
         
-        sample_names <- base::unique(sdf$Sample)
+        sample_names <- base::unique(sdf$sample)
         
         for(i in base::seq_along(sample_names)){
           
@@ -32,22 +32,22 @@ runSpataOnline <- function(object){
             
             sample_name <- sample_names[i]
             
-            sample_df <- dplyr::filter(sdf, Sample == {{sample_name}})
+            sample_df <- dplyr::filter(sdf, sample == {{sample_name}})
             
-            mode <- base::ifelse(test = sample_df$Pathological, yes = "p", no = "h")
+            status <- sample_df$status
             
             # create zoom button 
-            shiny::observeEvent(input[[htmlSampleId(sample_name, mode, pref = "zoom")]], {
+            shiny::observeEvent(input[[htmlSampleId(sample_name, pref = "zoom")]], {
               
               shiny::showModal(
                 ui = shiny::modalDialog(
-                  shiny::plotOutput(outputId = htmlSampleId(sample_name, mode, pref = "image_zoomed"), height = "600px"), 
+                  shiny::plotOutput(outputId = htmlSampleId(sample_name, pref = "image_zoomed"), height = "600px"), 
                   footer = shiny::tagList(
                     shiny::fluidRow(
                       htmlCol(
                         width = 12, offset = 2,
                         shiny::actionButton(
-                          inputId = htmlSampleId(sample_name, mode, pref = "close", suff = "image_zoomed"), 
+                          inputId = htmlSampleId(sample_name, pref = "close", suff = "image_zoomed"), 
                           label = "Close"
                         )
                       )
@@ -60,14 +60,14 @@ runSpataOnline <- function(object){
             })
             
             # create close modal button
-            shiny::observeEvent(input[[htmlSampleId(sample_name, mode, pref = "close", suff = "image_zoomed")]], {
+            shiny::observeEvent(input[[htmlSampleId(sample_name, pref = "close", suff = "image_zoomed")]], {
               
               shiny::removeModal()
               
             })
             
             # create download raw handler
-            download_raw_id <- htmlSampleId(sample_name, mode, pref = "download_raw")
+            download_raw_id <- htmlSampleId(sample_name, pref = "download_raw")
             
             output[[download_raw_id]] <- shiny::downloadHandler(
               
@@ -86,7 +86,7 @@ runSpataOnline <- function(object){
                   files = file, 
                   overwrite = TRUE,
                   verbose = FALSE,
-                  source_df = SPATAData::source_df
+                  source_df = sourceDataFrame()
                 )
                 
                 confuns::give_feedback(msg = "Done.", in.shiny = TRUE, duration = 10)
@@ -95,7 +95,7 @@ runSpataOnline <- function(object){
             )
             
             # create download spata handler
-            download_spata_id <- htmlSampleId(sample_name, mode, pref = "download_spata")
+            download_spata_id <- htmlSampleId(sample_name, pref = "download_spata")
             
             output[[download_spata_id]] <- shiny::downloadHandler(
               
@@ -114,7 +114,7 @@ runSpataOnline <- function(object){
                     sample_name = sample_name,
                     file = NULL, 
                     verbose = FALSE, 
-                    source_df = SPATAData::source_df
+                    source_df = sourceDataFrame()
                   )
                 
                 saveRDS(object = object, file = file)
@@ -125,7 +125,7 @@ runSpataOnline <- function(object){
             )
             
             # create image output
-            image_id <- htmlSampleId(sample_name = sample_name, mode = mode, pref = "image")
+            image_id <- htmlSampleId(sample_name, pref = "image")
             
             output[[image_id]] <- shiny::renderPlot({
               
@@ -144,7 +144,7 @@ runSpataOnline <- function(object){
             })
             
             # create image zoom output 
-            image_id <- htmlSampleId(sample_name = sample_name, mode = mode, pref = "image_zoomed")
+            image_id <- htmlSampleId(sample_name, pref = "image_zoomed")
             
             output[[image_id]] <- shiny::renderPlot({
               
@@ -164,18 +164,18 @@ runSpataOnline <- function(object){
             
             
             # create info button 
-            shiny::observeEvent(input[[htmlSampleId(sample_name, mode, pref = "info")]], {
+            shiny::observeEvent(input[[htmlSampleId(sample_name, pref = "info")]], {
               
               shiny::updateTabsetPanel(session = session, inputId = "visualize", selected = "visualize")
               
             })
             
             # create plot button
-            shiny::observeEvent(input[[htmlSampleId(sample_name, mode, pref = "plot")]], {
+            shiny::observeEvent(input[[htmlSampleId(sample_name, pref = "plot")]], {
               
               shinydashboard::updateTabItems(session = session, inputId = "sidebar", selected = "visualize")
               
-              if(exists("object", envir = .GlobalEnv)){
+              if(base::exists("object", envir = .GlobalEnv)){
                 
                 object <- get(x = "object", envir = .GlobalEnv)
                 

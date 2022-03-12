@@ -14,9 +14,9 @@ runSpataOnlineUI <- function(){
         shinydashboard::menuItem(text = "Welcome", tabName = "welcome"), 
         shinydashboard::menuItem(text = "Tissue - Overview", tabName = "tissue_overview"), 
         shinydashboard::menuItem(text = "Tissue - Organs", tabName = "tissue_organs", 
-                                 htmlTissueMenuItem(organ = "brain"),
-                                 htmlTissueMenuItem(organ = "heart"),
-                                 htmlTissueMenuItem(organ = "liver")
+                                 htmlTissueMenuItem(organ = "Brain"),
+                                 htmlTissueMenuItem(organ = "Heart"),
+                                 htmlTissueMenuItem(organ = "Liver")
         ),
         shinydashboard::menuItem(text = "Visualize", tabName = "visualize"), 
         shinydashboard::menuItem(text = "SPATA Framework", tabName = "spata_framework"),
@@ -41,10 +41,10 @@ runSpataOnlineUI <- function(){
       
       shinydashboard::tabItems(
         
-        htmlTissueTabItem(organ = "Brain", mode = "h", ncol = 3),
-        htmlTissueTabItem(organ = "Brain", mode = "p", ncol = 3), 
-        htmlTissueTabItem(organ = "Liver", mode = "h", ncol = 3),
-        htmlTissueTabItem(organ = "Liver", mode = "p", ncol = 3), 
+        htmlTissueTabItem(organ = "Brain", status = "h", ncol = 3),
+        htmlTissueTabItem(organ = "Brain", status = "p", ncol = 3), 
+        htmlTissueTabItem(organ = "Liver", status = "h", ncol = 3),
+        htmlTissueTabItem(organ = "Liver", status = "p", ncol = 3), 
         
         
         shinydashboard::tabItem(

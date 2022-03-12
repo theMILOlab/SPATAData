@@ -52,15 +52,11 @@ htmlOrganizeInColumns <- function(tag_list, ncol = 3){
 }
 
 
-htmlSampleId <- function(sample_name, mode, pref = NULL, suff = NULL){
+htmlSampleId <- function(sample_name, pref = NULL, suff = NULL){
   
-  df <- 
-    sourceDataFrame(mode = mode, distinct = TRUE) %>% 
-    dplyr::filter(Sample == {{sample_name}})
+  df <- sourceDataFrame(sample = sample_name) 
   
-  mode <- htmlTissueMode(mode = mode)
-  
-  stringr::str_c(pref, df$Organ, mode, "tissue", sample_name, suff, sep = "_")
+  stringr::str_c(pref, df$organ, df$status, "tissue", sample_name, suff, sep = "_")
   
 }
 
@@ -117,30 +113,30 @@ htmlTissueMenuItem <- function(organ){
     tabName = stringr::str_c("tissue", organ, sep = "_"), 
     shinydashboard::menuSubItem(
       text = "Healthy", 
-      tabName = htmlTissueTabName(organ = organ, mode = "h"),
+      tabName = htmlTissueTabName(organ = organ, status = "h"),
     ), 
     shinydashboard::menuSubItem(
       text = "Pathological", 
-      tabName = htmlTissueTabName(organ = organ, mode = "p")
+      tabName = htmlTissueTabName(organ = organ, status = "p")
     )
   )
   
 }
 
 
-htmlTissueBox <- function(sample_name, organ, mode, width = 4){
+htmlTissueBox <- function(sample_name, organ, status, width = 4){
   
-  id_download_spata <- htmlSampleId(sample_name, mode = mode, pref = "download_spata")
+  id_download_spata <- htmlSampleId(sample_name, pref = "download_spata")
   
-  id_download_raw <- htmlSampleId(sample_name, mode = mode, pref = "download_raw")
+  id_download_raw <- htmlSampleId(sample_name, pref = "download_raw")
   
-  id_info <- htmlSampleId(sample_name, mode = mode, pref = "info")
+  id_info <- htmlSampleId(sample_name, pref = "info")
   
-  id_image <- htmlSampleId(sample_name, mode = mode, pref = "image")
+  id_image <- htmlSampleId(sample_name, pref = "image")
   
-  id_plot <- htmlSampleId(sample_name, mode = mode, pref = "plot")
+  id_plot <- htmlSampleId(sample_name, pref = "plot")
   
-  id_zoom <- htmlSampleId(sample_name, mode = mode, pref = "zoom")
+  id_zoom <- htmlSampleId(sample_name, pref = "zoom")
 
   shinydashboard::box(
     title = NULL, 
@@ -176,11 +172,11 @@ htmlTissueBox <- function(sample_name, organ, mode, width = 4){
 
 htmlTissueBoxSubtitle <- function(sample_name){
   
-  df <- dplyr::filter(sourceDataFrame(), Sample == {{sample_name}} & Data_Type == "SPATA")
+  df <- sourceDataFrame(sample = sample_name)
   
-  det <- df$Histology_Detailed
+  det <- df$hist_classification
   
-  short <- df$Histology_Short
+  short <- df$hist_abbreviation
   
   if(base::identical(det, short)){
     
@@ -197,15 +193,15 @@ htmlTissueBoxSubtitle <- function(sample_name){
 }
 
 
-htmlTissueTabItem <- function(organ = NULL, mode = NULL, ncol = 3){
+htmlTissueTabItem <- function(organ = NULL, status = NULL, ncol = 3){
   
-  df <- sourceDataFrame(organ = organ, mode = mode, distinct = TRUE)
+  df <- sourceDataFrame(organ = organ, status = status)
   
-  samples <- base::unique(df$Sample)
+  samples <- base::unique(df$sample)
   
   if(base::length(samples) >= 1){
     
-    df <- dplyr::arrange(df, Sample, Histology_Short, Histology_Detailed)
+    df <- dplyr::arrange(df, sample, hist_abbreviation, hist_classification)
     
     purrr::map(
       .x = samples, 
@@ -214,7 +210,7 @@ htmlTissueTabItem <- function(organ = NULL, mode = NULL, ncol = 3){
           htmlTissueBox(
             sample_name = sample_name, 
             organ = organ, 
-            mode = mode, 
+            status = status, 
             width = 12/ncol
           )
           
@@ -222,11 +218,11 @@ htmlTissueTabItem <- function(organ = NULL, mode = NULL, ncol = 3){
     ) %>% 
       htmlOrganizeInColumns(ncol = ncol) %>% 
       shiny::tagList() %>% 
-      shinydashboard::tabItem(tabName = htmlTissueTabName(organ = organ, mode = mode))
+      shinydashboard::tabItem(tabName = htmlTissueTabName(organ = organ, status = status))
     
   } else {
     
-    shinydashboard::tabItem(tabName = htmlTissueTabName(organ = organ, mode = mode))
+    shinydashboard::tabItem(tabName = htmlTissueTabName(organ = organ, status = status))
     
   }
   
@@ -237,31 +233,11 @@ htmlTissueTabItem <- function(organ = NULL, mode = NULL, ncol = 3){
 
 
 
-
-
-htmlTissueMode <- function(mode){
-  
-  if(mode == "p"){
-    
-    mode <- "pathological"
-    
-  } else if(mode == "h"){
-    
-    mode <- "healthy"
-    
-  }
-  
-  return(mode)
-  
-}
-
-htmlTissueTabName <- function(organ, mode){
+htmlTissueTabName <- function(organ, status){
   
   organ <- confuns::make_capital_letters(organ)
   
-  mode <- htmlTissueMode(mode)
-  
-  stringr::str_c("tissue", organ, mode, sep = "_")
+  stringr::str_c("tissue", organ, status, sep = "_")
   
 }
 

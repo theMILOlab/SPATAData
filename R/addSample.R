@@ -23,9 +23,6 @@ addSample <- function(source_df = sourceDataFrame(), update){
           # render uis 
           output$provide_information <- shiny::renderUI({
             
-            # selecize inputs
-            print(updated_source_df())
-            
             # one value inputs 
             selectize_inputs <- 
               purrr::map(

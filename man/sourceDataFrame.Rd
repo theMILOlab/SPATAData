@@ -4,7 +4,7 @@
 \alias{sourceDataFrame}
 \title{Obtain the SPATAData \code{source_df}}
 \usage{
-sourceDataFrame(organ = NULL, status = NULL)
+sourceDataFrame(organ = NULL, status = NULL, sample = NULL)
 }
 \arguments{
 \item{organ}{Character value. Filter for organs.}
