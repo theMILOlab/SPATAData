@@ -62,3 +62,9 @@ selectize_variables <- c("sample", "age", "patient_id",
                          "organization", "who_grade", "species", "assay_type")
 
 text_variables <- c("link_spata", "link_raw", "link_image")
+
+
+filter_sample_variables <- c("anatomical_region", "pathology", "hist_classification", "who_grade", 
+                             "organization", "assay_type", "tags")
+
+

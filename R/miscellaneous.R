@@ -177,7 +177,7 @@ sourceDataFrame <- function(organ = NULL, status = NULL, sample = NULL){
 #'
 sourceDataFrameTags <- function(source_df = sourceDataFrame(), sample_name = NULL){
   
-  if(base::is.character(sammple_name)){
+  if(base::is.character(sample_name)){
     
     confuns::check_one_of(
       input = sample_name, 
@@ -218,6 +218,97 @@ sampleTags <- function(source_df = sourceDataFrame(), sample_name){
   
   stringr::str_split(tags, pattern = "\\|") %>% 
     purrr::flatten_chr()
+  
+}
+
+
+filterSamples <- function(source_df = sourceDataFrame(), input, organ, status, all){
+  
+  test <- base::ifelse(test = base::isTRUE(all), yes = "all", no = "any")
+  
+  sdf <- dplyr::filter(source_df, organ == {{organ}} & status == {{status}})
+  
+  input_filter <- confuns::lselect(lst = input, dplyr::starts_with("filter_sample"))
+  
+  if(status == "h"){
+    
+    variables <- confuns::vselect(filter_sample_variables, -pathology)
+    
+  } else if(status == "p"){
+    
+    variables <- filter_sample_variables
+    
+  }
+  
+  if(test == "all"){
+    
+    for(variable in variables){
+      
+      var_id <- stringr::str_c("filter_sample", organ, status, variable, sep = "_")
+      
+      content <- input_filter[[var_id]]
+      
+      if(base::length(content) >= 1){
+        
+        if(variable == "tags"){
+          
+          sdf <- 
+            dplyr::filter(sdf, stringr::str_detect(string = tags, pattern = stringr::str_c(content, collapse = "|"))) %>% 
+            dplyr::pull(sample)
+          
+        } else {
+          
+          sdf <- dplyr::filter(sdf, !!rlang::sym(variable) %in% {{content}})  
+          
+        }
+        
+      }
+      
+    }
+    
+    out <- sdf$sample
+    
+  } else if(test == "any"){
+    
+    snames <- list()
+    
+    for(variable in variables){
+      
+      content <- 
+        confuns::lselect(
+          lst = input_filter,
+          dplyr::ends_with(stringr::str_c(status, variable, sep = "_"))
+          )
+      
+      content <- content[[1]]
+      
+      if(base::length(content) >= 1){
+        
+        if(variable == "tags"){
+          
+          snames[[variable]] <- 
+            dplyr::filter(sdf, stringr::str_detect(string = tags, pattern = stringr::str_c(content, collapse = "|"))) %>% 
+            dplyr::pull(sample)
+          
+        } else {
+          
+          snames[[variable]] <- 
+            dplyr::filter(sdf, !!rlang::sym(variable) %in% {{content}}) %>% 
+            dplyr::pull(sample)
+          
+        }
+        
+      }
+      
+    }
+    
+    out <- 
+      purrr::flatten_chr(snames) %>% 
+      base::unique()
+    
+  }
+  
+  return(out)
   
 }
 

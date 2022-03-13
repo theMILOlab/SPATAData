@@ -7,68 +7,227 @@
 #' @title SPATAs online presence
 #' @export
 #'
-runSpataOnline <- function(object){
+runSpataOnline <- function(input_source_df = sourceDataFrame()){
   
   shiny::runApp(
     shiny::shinyApp(
-      ui = runSpataOnlineUI(), 
+      ui = runSpataOnlineUI(source_df = input_source_df), 
       server = function(input, output, session){
         
         # html add ons 
         shinyhelper::observe_helpers()
         
         # app start
-        sdf <- sourceDataFrame()
+        
+        ncol <- 3
+        
+        sdf <- input_source_df
         
         spata_object <- shiny::reactiveVal(val = NULL)
         
-
-        # Tab: Menu items ---------------------------------------------------------
+        # Tab: Tissue-Organs UI ----------------------------------------------------
         
-        output$tissue_organs_menu_items <- shiny::renderUI({
+        output$all_tab_items <- shiny::renderUI({
           
-          if(FALSE){
-            
-            shinydashboard::menuItem(text = "Tissue - Organs", tabName = "tissue_organs",
-                                     htmlTissueMenuItem(organ = "Brain"),
-                                     htmlTissueMenuItem(organ = "Heart"),
-                                     htmlTissueMenuItem(organ = "Liver")
+          shiny::tags$div(
+            class = "tab-content",
+            htmlTissueTabItems(source_df = sdf), 
+            htmlTabItemVisualize()
             )
-            
-          }
-          
-          map(.x = c("Liver", "Brain", "Heart"), .f = ~ htmlTissueMenuItem(organ = .x)) %>% tagList()
-          
-          
-          
           
         })
         
+        # create tissue boxes 
+        tissue_boxes <- htmlTissueBoxes(source_df = sdf, ncol = ncol)
         
-        output$tot <- shiny::renderUI({
+        organ_names <- base::unique(sdf$organ)
+        
+        for(i in base::seq_along(organ_names)){
           
-          # TabItem - Tissue - Organ 
-          shiny::tagList(
-            purrr::map(
-              .x = base::unique(source_df$organ),
-              .f = function(organ){ 
+          base::local({ # create local environment for every organ-tab
+            
+            # ----- ORGAN SPECIFIC OBJECTS ----- #
+            
+            organ <- organ_names[i]
+            
+            osdf <- 
+              dplyr::filter(sdf, organ == {{organ}}) %>% 
+              dplyr::arrange(hist_classification, anatomical_region, sample)
+            
+            hdf <- dplyr::filter(osdf, status == "h")
+            pdf <- dplyr::filter(osdf, status == "p")
+            
+            h_samples <- hdf$sample
+            p_samples <- pdf$sample
+            
+            filtered_samples <- shiny::reactiveValues(h = h_samples, p = p_samples)
+            
+            tab_name_h <- htmlTissueTabName(organ = organ, status = "h")
+            tab_name_p <- htmlTissueTabName(organ = organ, status = "p")
+            
+            # ----- ORGAN SPECIFIC OBJECTS END ----- #
+            
+            # ----- FILTER BOX ----- #
+            
+            filter_tab_id_h <- stringr::str_c(tab_name_h, "tab_ui_output_filter_box", sep = "_")
+            filter_tab_id_p <- stringr::str_c(tab_name_p, "tab_ui_output_filter_box", sep = "_")
+            
+            # filter box healthy
+            output[[filter_tab_id_h]] <- shiny::renderUI({
+              
+              shiny::wellPanel(
+                htmlFilterSamplesGroupCheckboxes(source_df = osdf, organ = organ, status = "h", ncol = 6),
+                htmlBreak(1), 
+                htmlFilterSamplesActionButtons(prel_id = filter_tab_id_h)
+              )
+              
+            })
+            
+            # filter box pathological 
+            output[[filter_tab_id_p]] <- shiny::renderUI({
+              
+                shiny::wellPanel(
+                  htmlFilterSamplesGroupCheckboxes(source_df = osdf, organ = organ, status = "p", ncol = 6),
+                  htmlBreak(1),
+                  htmlFilterSamplesActionButtons(prel_id = filter_tab_id_p)
+                )
+              
+            })
+            
+            
+            # action button - apply filter
+            shiny::observeEvent(input[[stringr::str_c(filter_tab_id_h, "apply_filter", sep = "_")]], {
+              
+              filtered_samples$h <- 
+                filterSamples(
+                  source_df = sdf,
+                  input = shiny::reactiveValuesToList(input),
+                  status = "h",
+                  organ = organ, 
+                  all = TRUE
+                  )
+              
+            })
+            
+            shiny::observeEvent(input[[stringr::str_c(filter_tab_id_p, "apply_filter", sep = "_")]], {
+              
+              filtered_samples$p <- 
+                filterSamples(
+                  source_df = sdf,
+                  input = shiny::reactiveValuesToList(input),
+                  status = "p",
+                  organ = organ, 
+                  all = TRUE
+                )
+              
+            })
+            
+            # action button - reset filter
+            shiny::observeEvent(input[[stringr::str_c(filter_tab_id_h, "reset_filter", sep = "_")]], {
+              
+              for(variable in confuns::vselect(filter_sample_variables, -pathology)){
                 
-                purrr::map(
-                  .x = c("h", "p"), 
-                  .f = ~ htmlTissueTabItem(organ = organ, status = .x, ncol = 3)
+                id <- stringr::str_c("filter_sample", organ, "h", variable, sep = "_")
+                
+                if(variable == "tags"){
+                  
+                  choices <- sourceDataFrameTags(source_df = hdf) %>% base::sort()
+                  
+                } else {
+                  
+                  choices <- base::unique(hdf[[variable]]) %>% base::sort()
+                  
+                }
+                
+                shiny::updateCheckboxGroupInput(
+                  inputId = id,
+                  choices = choices,
+                  selected = NULL
+                  )
+                
+              }
+              
+              filtered_samples$h <- h_samples
+              
+            })
+            
+            shiny::observeEvent(input[[stringr::str_c(filter_tab_id_p, "reset_filter", sep = "_")]], {
+              
+              for(variable in filter_sample_variables){
+                
+                id <- stringr::str_c("filter_sample", organ, "p", variable, sep = "_")
+                
+                if(variable == "tags"){
+                  
+                  choices <- sourceDataFrameTags(source_df = pdf) %>% base::sort()
+                  
+                } else {
+                  
+                  choices <- base::unique(pdf[[variable]]) %>% base::sort()
+                  
+                }
+                
+                shiny::updateCheckboxGroupInput(
+                  inputId = id,
+                  choices = choices,
+                  selected = NULL
                 )
                 
-              }) %>% 
-              purrr::flatten()
-          )
+              }
+              
+              filtered_samples$p <- p_samples
+              
+            })
+            
+            # ----- FILTER BOX END ----- #
+            
+            
+            # ----- TISSUE BOXES ----- #
+            tissue_boxes_id_h <- stringr::str_c(tab_name_h, "tab_ui_output_tissue_boxes", sep = "_")
+            tissue_boxes_id_p <- stringr::str_c(tab_name_p, "tab_ui_output_tissue_boxes", sep = "_")
+            
+            output[[tissue_boxes_id_h]] <- shiny::renderUI({
+              
+              samples <- filtered_samples$h
+              
+              if(base::length(samples) >= 1){
+                
+                htmlOrganizeInColumns(tissue_boxes[samples], ncol = ncol) %>% 
+                  shiny::tagList()  
+                
+              } else {
+                
+                shiny::tagList()
+                
+              }
+              
+            })
+            
+            output[[tissue_boxes_id_p]] <- shiny::renderUI({
+              
+              samples <- filtered_samples$p
+              
+              if(base::length(samples) >= 1){
+                
+                htmlOrganizeInColumns(tissue_boxes[samples], ncol = ncol) %>% 
+                  shiny::tagList()  
+                
+              } else {
+                
+                shiny::tagList()
+                
+              }
+              
+            })
+            
+            # ----- TISSUE BOXES END ----- #
+            
+          })
           
-        })
-
+        }
         
         
-        
-        
-        # Tab: Tissue-Organs ------------------------------------------------------
+        # Tab: Tissue-Organs Server -----------------------------------------------
         
         sample_names <- base::unique(sdf$sample)
         
@@ -349,6 +508,8 @@ runSpataOnline <- function(object){
           
           shiny::req(color_by())
           
+          #assign(x = "input", value = reactiveValuesToList(input), envir = .GlobalEnv)
+          
           SPATA2::plotSurface(
             object = active_spata_object(),
             color_by = color_by(),
@@ -363,8 +524,9 @@ runSpataOnline <- function(object){
           ) +
             SPATA2::ggpLayerFrameByImage(object = active_spata_object())
           
-          
-        })  
+        })
+        
+        
         
       }
     )
