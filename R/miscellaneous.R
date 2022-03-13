@@ -175,13 +175,34 @@ sourceDataFrame <- function(organ = NULL, status = NULL, sample = NULL){
 #' @return Character vector.
 #' @export
 #'
-sourceDataFrameTags <- function(source_df = sourceDataFrame()){
+sourceDataFrameTags <- function(source_df = sourceDataFrame(), sample_name = NULL){
+  
+  if(base::is.character(sammple_name)){
+    
+    confuns::check_one_of(
+      input = sample_name, 
+      against = source_df$sample
+    )
+    
+    source_df <- dplyr::filter(source_df, sample == {{sample_name}})
+    
+  }
   
   stringr::str_split(source_df$tags, pattern = "\\|") %>% 
     purrr::flatten_chr() %>% 
     base::unique()
   
 }
+
+
+#' @rdname sourceDataFrameTags
+#' @export
+sourceDataFrameOrgans <- function(source_df = sourceDataFrame()){
+  
+  source_df$organ %>% base::unique()
+  
+}
+
 
 #' @rdname sourceDataFrameTags
 sampleTags <- function(source_df = sourceDataFrame(), sample_name){

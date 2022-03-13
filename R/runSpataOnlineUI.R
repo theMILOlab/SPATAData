@@ -1,7 +1,7 @@
 
 
 
-runSpataOnlineUI <- function(){
+runSpataOnlineUI <- function(source_df = sourceDataFrame()){
   
   shinydashboard::dashboardPage(
     
@@ -13,10 +13,13 @@ runSpataOnlineUI <- function(){
         id = "sidebar",
         shinydashboard::menuItem(text = "Welcome", tabName = "welcome"), 
         shinydashboard::menuItem(text = "Tissue - Overview", tabName = "tissue_overview"), 
-        shinydashboard::menuItem(text = "Tissue - Organs", tabName = "tissue_organs", 
-                                 htmlTissueMenuItem(organ = "Brain"),
-                                 htmlTissueMenuItem(organ = "Heart"),
-                                 htmlTissueMenuItem(organ = "Liver")
+        shinydashboard::menuItem(text = "Tissue - Organs", tabName = "tissue_organs",
+                                 shiny::tagList(
+                                   purrr::map(
+                                     .x = base::unique(source_df$organ),
+                                     .f = ~ htmlTissueMenuItem(organ = .x)
+                                     )
+                                 )
         ),
         shinydashboard::menuItem(text = "Visualize", tabName = "visualize"), 
         shinydashboard::menuItem(text = "SPATA Framework", tabName = "spata_framework"),
@@ -39,14 +42,24 @@ runSpataOnlineUI <- function(){
 
       shinybusy::add_busy_spinner(spin = "cube-grid", color = "red"),
       
-      shinydashboard::tabItems(
+      shiny::tags$div(class = "tab-content",
         
-        htmlTissueTabItem(organ = "Brain", status = "h", ncol = 3),
-        htmlTissueTabItem(organ = "Brain", status = "p", ncol = 3), 
-        htmlTissueTabItem(organ = "Liver", status = "h", ncol = 3),
-        htmlTissueTabItem(organ = "Liver", status = "p", ncol = 3), 
-        
-        
+
+        #shiny::uiOutput(outputId = "tot"),
+        shiny::tagList(
+          purrr::map(
+            .x = base::unique(source_df$organ),
+            .f = function(organ){ 
+              
+              purrr::map(
+                .x = c("h", "p"), 
+                .f = ~ htmlTissueTabItem(organ = organ, status = .x, ncol = 3)
+              )
+              
+            }) %>% 
+            purrr::flatten()
+        ),
+        # TabItem - Visualize
         shinydashboard::tabItem(
           tabName = "visualize",
           shiny::fluidRow(

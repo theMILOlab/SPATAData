@@ -22,6 +22,52 @@ runSpataOnline <- function(object){
         
         spata_object <- shiny::reactiveVal(val = NULL)
         
+
+        # Tab: Menu items ---------------------------------------------------------
+        
+        output$tissue_organs_menu_items <- shiny::renderUI({
+          
+          if(FALSE){
+            
+            shinydashboard::menuItem(text = "Tissue - Organs", tabName = "tissue_organs",
+                                     htmlTissueMenuItem(organ = "Brain"),
+                                     htmlTissueMenuItem(organ = "Heart"),
+                                     htmlTissueMenuItem(organ = "Liver")
+            )
+            
+          }
+          
+          map(.x = c("Liver", "Brain", "Heart"), .f = ~ htmlTissueMenuItem(organ = .x)) %>% tagList()
+          
+          
+          
+          
+        })
+        
+        
+        output$tot <- shiny::renderUI({
+          
+          # TabItem - Tissue - Organ 
+          shiny::tagList(
+            purrr::map(
+              .x = base::unique(source_df$organ),
+              .f = function(organ){ 
+                
+                purrr::map(
+                  .x = c("h", "p"), 
+                  .f = ~ htmlTissueTabItem(organ = organ, status = .x, ncol = 3)
+                )
+                
+              }) %>% 
+              purrr::flatten()
+          )
+          
+        })
+
+        
+        
+        
+        
         # Tab: Tissue-Organs ------------------------------------------------------
         
         sample_names <- base::unique(sdf$sample)
