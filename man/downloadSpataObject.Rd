@@ -9,6 +9,7 @@ downloadSpataObject(
   overwrite = FALSE,
   folder = base::getwd(),
   file = stringr::str_c(sample_name, ".RDS"),
+  in_shiny = FALSE,
   verbose = TRUE,
   ...
 )
@@ -50,6 +51,9 @@ downloadSpataObject(sample_name = "275_T")
 
 # download AND assign
 object <- downloadSpataObject(sample_name = "275_T")
+
+# only assign 
+object <- downloadSpataObject(sample_name = "275_T", file = NULL)
 
 
 }

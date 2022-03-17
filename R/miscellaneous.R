@@ -112,15 +112,41 @@ adjustSampleManually <- function(source_df = sourceDataFrame(),
 #' @title Plot the sample image
 plotSampleImage <- function(sample_name, which = "lowres"){
   
-  image_dir <- stringr::str_c("images/", sample_name, "/tissue_", which, "_image.png")
+  link_image <- 
+    sourceDataFrame(sample = sample_name) %>% 
+    dplyr::pull(var = "link_image")
   
-  if(base::file.exists(image_dir)){
+  if(base::is.character(link_image)){
     
     img <- 
-      magick::image_read(path = image_dir) %>% 
-      grDevices::as.raster()
+      base::tryCatch({
+        
+        magick::image_read(path = link_image)
+        
+      }, error = function(error){
+        
+        NULL
+        
+      })
     
-    plot(img)
+    if(!base::is.null(img)){
+      
+      grDevices::as.raster(img) %>% 
+      base::plot()
+      
+    } else {
+      
+      magick::image_read(path = "https://grrrls.at/wp-content/uploads/2020/01/no-image.jpg") %>%
+        grDevices::as.raster() %>% 
+        base::plot()
+      
+    }
+    
+  } else {
+    
+    magick::image_read(path = "https://grrrls.at/wp-content/uploads/2020/01/no-image.jpg") %>%
+      grDevices::as.raster() %>% 
+      base::plot()
     
   }
   

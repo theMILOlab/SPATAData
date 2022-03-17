@@ -339,40 +339,21 @@ launchSpataDataServer <- function(input, output, session){
       )
       
       # create image output
+      
       image_id <- htmlSampleId(sample_name, pref = "image")
       
       output[[image_id]] <- shiny::renderPlot({
         
-        image_dir <- stringr::str_c("images/", sample_name, "/tissue_lowres_image.png")
-        
-        if(base::file.exists(image_dir)){
-          
-          img <- 
-            magick::image_read(path = image_dir) %>% 
-            grDevices::as.raster()
-          
-          plot(img)
-          
-        }
+        plotSampleImage(sample_name = sample_name)
         
       })
       
       # create image zoom output 
-      image_id <- htmlSampleId(sample_name, pref = "image_zoomed")
+      image_id_zoomed <- htmlSampleId(sample_name, pref = "image_zoomed")
       
-      output[[image_id]] <- shiny::renderPlot({
+      output[[image_id_zoomed]] <- shiny::renderPlot({
         
-        image_dir <- stringr::str_c("images/", sample_name, "/tissue_lowres_image.png")
-        
-        if(base::file.exists(image_dir)){
-          
-          img <- 
-            magick::image_read(path = image_dir) %>% 
-            grDevices::as.raster()
-          
-          plot(img)
-          
-        }
+        plotSampleImage(sample_name = sample_name)
         
       })
       
@@ -389,15 +370,7 @@ launchSpataDataServer <- function(input, output, session){
         
         shinydashboard::updateTabItems(session = session, inputId = "sidebar", selected = "visualize")
         
-        if(base::exists("object", envir = .GlobalEnv)){
-          
-          object <- get(x = "object", envir = .GlobalEnv)
-          
-        } else {
-          
-          object <- SPATA2::loadSpataObject(directory_spata = 'C:/Informatics/R-Folder/Packages/SPATAOnline/334_T.RDS')
-          
-        }
+        object <- downloadSpataObject(sample_name = sample_name, file = NULL, in_shiny = TRUE)
         
         spata_object(object)
         

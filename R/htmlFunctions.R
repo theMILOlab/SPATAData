@@ -285,19 +285,19 @@ htmlTissueBox <- function(sample_name, organ, status, width = 4, source_df = sou
       shiny::fluidRow(
         htmlCol(5, 
                 shiny::splitLayout(
-                  shiny::actionButton(inputId = id_plot, label = "Plot", width = "100%"), 
-                  shiny::actionButton(inputId = id_zoom, label = "Zoom", width = "100%"), 
-                  cellWidths = c("50%")
+                  shiny::actionButton(inputId = id_plot, label = "Visualize", width = "100%"), 
+                  #shiny::actionButton(inputId = id_zoom, label = "Zoom", width = "100%"), 
+                  cellWidths = c("100%")
                 )
         ),
         htmlCol(5,
                 shiny::splitLayout(
-                  shiny::downloadButton(outputId = id_download_spata, label = "SPATA", width = "100%"), 
+                  shiny::downloadButton(outputId = id_download_spata, label = "SPATA2", width = "100%"), 
                   shiny::downloadButton(outputId = id_download_raw, label = "RAW", width = "100%"),
                   cellWidths = c("50%")
                 )
         ),
-        htmlCol(2, shiny::actionButton(inputId = id_info, label = "", icon = shiny::icon("question-circle"), width = "100%"))
+        htmlCol(2, shiny::actionButton(inputId = id_zoom, label = "", icon = shiny::icon("question-circle"), width = "100%"))
       ), 
       htmlBreak(1)
     )
