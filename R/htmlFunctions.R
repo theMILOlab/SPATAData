@@ -13,6 +13,143 @@ htmlCol <- function(width, ...,  align = "center", offset = 0){
 }
 
 
+htmlEmptyTissueBox <- function(width = 4, ...){
+  
+  if(base::exists(x = "box_type", where = .GlobalEnv) &&
+     base::get(x = "box_type", envir = .GlobalEnv) == "CSS"){
+    
+    shiny::tagList(
+      shiny::column(
+        width = width,
+        shiny::div(
+          class = "tissue-box", 
+          ...
+        )
+      )
+    )
+    
+  } else {
+    
+    shinydashboard::box(width = width, ...)
+    
+  }
+  
+}
+
+htmlFilterSamplesActionButtons <- function(prel_id){
+  
+  shiny::fluidRow(
+    shiny::column(
+      width = 6,
+      align = "right",
+      shinyWidgets::actionBttn(
+        inputId = stringr::str_c(prel_id, "apply_filter", sep = "_"), 
+        label = "Apply Filter", 
+        style = "material-flat", 
+        color = "primary", 
+        size = "sm"
+      )
+    ),
+    shiny::column(
+      width = 6,
+      align = "left",
+      shinyWidgets::actionBttn(
+        inputId = stringr::str_c(prel_id, "reset_filter", sep = "_"), 
+        label = "Reset Filter", 
+        style = "material-flat", 
+        color = "primary", 
+        size = "sm"
+      )
+    )
+  )
+  
+}
+
+
+htmlFilterSamplesBox <- function(...){
+  
+  shinydashboard::box(
+    title = "Filter Samples", 
+    width = 12, 
+    collapsed = FALSE, 
+    collapsible = FALSE, 
+    ...
+  )
+  
+}
+
+htmlFilterSamplesGroupCheckbox <- function(source_df = sourceDataFrame(), variable, prel_id){
+  
+  if(variable == "tags"){
+    
+    choices <- sourceDataFrameTags(source_df = source_df)
+    
+    inline <- TRUE
+    
+  } else {
+    
+    choice_values <- 
+      base::unique(source_df[[variable]]) %>% 
+      purrr::keep(.p = ~ shiny::isTruthy(.x)) %>% 
+      base::sort()
+    
+    choices <- 
+      purrr::set_names(
+        x = choice_values, 
+        nm = confuns::make_pretty_names(choice_values)
+      )
+    
+    inline <- FALSE
+    
+  }
+  
+  shiny::checkboxGroupInput(
+    inputId = stringr::str_c(prel_id, variable, sep = "_"), 
+    label = confuns::make_pretty_name(variable), 
+    choices = choices, 
+    selected = NULL, 
+    inline = inline
+  )
+  
+}
+
+htmlFilterSamplesGroupCheckboxes <- function(source_df = sourceDataFrame(), organ, status, ncol = 4){
+  
+  if(status == "h"){
+    
+    variables <- confuns::vselect(filter_sample_variables, -pathology, -who_grade)
+    
+  } else if(status == "p") {
+    
+    variables <- filter_sample_variables
+    
+  }
+  
+  source_df <- dplyr::filter(source_df, status == {{status}})
+  
+  prel_id <- stringr::str_c("filter_sample", organ, status, sep = "_")
+  
+  purrr::map(
+    .x = variables, 
+    .f = function(variable){
+      
+      shiny::column(
+        width = 12/ncol,
+        shiny::verticalLayout(
+          htmlFilterSamplesGroupCheckbox(
+            source_df = source_df,
+            variable = variable,
+            prel_id = prel_id
+          )
+        )
+      )
+      
+    }
+  ) %>% 
+    htmlOrganizeInColumns(ncol = ncol)
+  
+}
+
 htmlHelper <- function(shiny_tag, content, title = "What do I have to do here?", type = "inline", size = "s", ...){
   
   shinyhelper::helper(
@@ -25,9 +162,7 @@ htmlHelper <- function(shiny_tag, content, title = "What do I have to do here?",
   
 }
 
-
-
-htmlOrganizeInColumns <- function(tag_list, ncol = 3){
+htmlOrganizeInColumns <- function(tag_list, ncol = 3, breaks = 1){
   
   n_inputs <- length(tag_list)
   
@@ -43,14 +178,19 @@ htmlOrganizeInColumns <- function(tag_list, ncol = 3){
         shiny::tagList()
       
       # return tag list of up to four pickers in row
-      shiny::fluidRow(selected_inputs)
+      
+      shiny::tagList(
+        shiny::fluidRow(htmlBreak(n = breaks)),
+        shiny::fluidRow(selected_inputs),
+        shiny::fluidRow(htmlBreak(n = breaks))
+      )
+      
       
     }
   ) %>% 
     shiny::tagList()
   
 }
-
 
 htmlSampleId <- function(sample_name, pref = NULL, suff = NULL, source_df = sourceDataFrame()){
   
@@ -104,6 +244,7 @@ htmlTextInput <- function(variable, ncol){
 }
 
 
+
 htmlTissueBox <- function(sample_name, organ, status, width = 4, source_df = sourceDataFrame()){
   
   id_download_spata <- htmlSampleId(sample_name, pref = "download_spata", source_df = source_df)
@@ -132,8 +273,8 @@ htmlTissueBox <- function(sample_name, organ, status, width = 4, source_df = sou
   
   title <- stringr::str_c(df$hist_classification, region, sep = " ")
   
-  shinydashboard::box(
-    title = NULL, 
+  
+  htmlEmptyTissueBox(
     width = width, 
     shiny::column(
       width = 12, 
@@ -205,121 +346,6 @@ htmlTissueMenuItem <- function(organ){
   )
   
 }
-
-htmlFilterSamplesActionButtons <- function(prel_id){
-  
-  shiny::fluidRow(
-    shiny::column(
-      width = 6,
-      align = "right",
-      shinyWidgets::actionBttn(
-        inputId = stringr::str_c(prel_id, "apply_filter", sep = "_"), 
-        label = "Apply Filter", 
-        style = "material-flat", 
-        color = "primary", 
-        size = "sm"
-      )
-    ),
-    shiny::column(
-      width = 6,
-      align = "left",
-      shinyWidgets::actionBttn(
-        inputId = stringr::str_c(prel_id, "reset_filter", sep = "_"), 
-        label = "Reset Filter", 
-        style = "material-flat", 
-        color = "primary", 
-        size = "sm"
-      )
-    )
-  )
-  
-}
-
-
-htmlFilterSamplesBox <- function(...){
-  
-  shinydashboard::box(
-    title = "Filter Samples", 
-    width = 12, 
-    collapsed = FALSE, 
-    collapsible = FALSE, 
-    ...
-  )
-  
-}
-
-htmlFilterSamplesGroupCheckbox <- function(source_df = sourceDataFrame(), variable, prel_id){
-
-  if(variable == "tags"){
-    
-    choices <- sourceDataFrameTags(source_df = source_df)
-    
-    inline <- TRUE
-    
-  } else {
-    
-    choice_values <- 
-      base::unique(source_df[[variable]]) %>% 
-      purrr::keep(.p = ~ shiny::isTruthy(.x)) %>% 
-      base::sort()
-    
-    choices <- 
-      purrr::set_names(
-        x = choice_values, 
-        nm = confuns::make_pretty_names(choice_values)
-      )
-    
-    inline <- FALSE
-    
-  }
-
-  shiny::checkboxGroupInput(
-    inputId = stringr::str_c(prel_id, variable, sep = "_"), 
-    label = confuns::make_pretty_name(variable), 
-    choices = choices, 
-    selected = NULL, 
-    inline = inline
-  )
-  
-}
-
-htmlFilterSamplesGroupCheckboxes <- function(source_df = sourceDataFrame(), organ, status, ncol = 4){
-  
-  if(status == "h"){
-    
-    variables <- confuns::vselect(filter_sample_variables, -pathology, -who_grade)
-    
-  } else if(status == "p") {
-    
-    variables <- filter_sample_variables
-    
-  }
-  
-  source_df <- dplyr::filter(source_df, status == {{status}})
-  
-  prel_id <- stringr::str_c("filter_sample", organ, status, sep = "_")
-  
-  purrr::map(
-    .x = variables, 
-    .f = function(variable){
-      
-      shiny::column(
-        width = 12/ncol,
-        shiny::verticalLayout(
-          htmlFilterSamplesGroupCheckbox(
-            source_df = source_df,
-            variable = variable,
-            prel_id = prel_id
-          )
-        )
-      )
-      
-    }
-  ) %>% 
-    htmlOrganizeInColumns(ncol = ncol)
-  
-}
-
 
 
 htmlTabItemVisualize <- function(){

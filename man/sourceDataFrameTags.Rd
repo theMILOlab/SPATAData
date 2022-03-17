@@ -2,10 +2,13 @@
 % Please edit documentation in R/miscellaneous.R
 \name{sourceDataFrameTags}
 \alias{sourceDataFrameTags}
+\alias{sourceDataFrameOrgans}
 \alias{sampleTags}
 \title{Obtain all sample tags}
 \usage{
-sourceDataFrameTags(source_df = sourceDataFrame())
+sourceDataFrameTags(source_df = sourceDataFrame(), sample_name = NULL)
+
+sourceDataFrameOrgans(source_df = sourceDataFrame())
 
 sampleTags(source_df = sourceDataFrame(), sample_name)
 }
