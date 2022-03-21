@@ -15,7 +15,6 @@ Imports:
     dplyr,
     downloader,
     fresh,
-    gganatogram,
     glue,
     purrr,
     shiny, 
