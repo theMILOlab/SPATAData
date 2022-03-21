@@ -8,21 +8,9 @@ launchSpataDataServer <- function(input, output, session){
   
   ncol <- 3
   
-  sdf <- SPATAData::source_df
+  sdf <- shiny::reactiveVal(val = SPATAData::source_df)
   
   spata_object <- shiny::reactiveVal(val = NULL)
-  
-  # Tab: Tissue-Organs UI ----------------------------------------------------
-  
-  output$all_tab_items <- shiny::renderUI({
-    
-    shiny::tags$div(
-      class = "tab-content",
-      htmlTissueTabItems(source_df = sdf), 
-      htmlTabItemVisualize()
-    )
-    
-  })
   
   output$menu <- shinydashboard::renderMenu({
     
@@ -33,354 +21,432 @@ launchSpataDataServer <- function(input, output, session){
       shinydashboard::menuItem(text = "Tissue - Organs", tabName = "tissue_organs",
                                shiny::tagList(
                                  purrr::map(
-                                   .x = base::unique(sdf$organ),
+                                   .x = base::unique(sdf()$organ),
                                    .f = ~ htmlTissueMenuItem(organ = .x)
                                  )
                                )
       ),
       shinydashboard::menuItem(text = "Visualize", tabName = "visualize"), 
       shinydashboard::menuItem(text = "SPATA Framework", tabName = "spata_framework"), 
-      shinydashboard::menuItem(text = "FAQ", tabName = "faq"), 
-      shiny::actionButton(inputId = "restart_app", label = "Restart App")
-      
+      shinydashboard::menuItem(text = "FAQ", tabName = "faq"),
+      htmlBreak(n = 2),
+      shiny::column(
+        width = 12, 
+        align = "center", 
+        shiny::fileInput(
+          inputId = "add_source_file",
+          label = "Upload Source File",
+          accept = c(".xls", ".xlsx", ".csv", ".RDS"),
+          width = "100%"
+        )
+      )
     )
     
   })
   
-  # create tissue boxes 
-  tissue_boxes <- htmlTissueBoxes(source_df = sdf, ncol = ncol)
+  # Tab: Tissue-Organs UI ----------------------------------------------------
   
-  organ_names <- base::unique(sdf$organ)
-  
-  for(i in base::seq_along(organ_names)){
+  output$all_tab_items <- shiny::renderUI({
     
-    base::local({ # create local environment for every organ-tab
-      
-      # ----- ORGAN SPECIFIC OBJECTS ----- #
-      
-      organ <- organ_names[i]
-      
-      osdf <- 
-        dplyr::filter(sdf, organ == {{organ}}) %>% 
-        dplyr::arrange(hist_classification, anatomical_region, sample)
-      
-      hdf <- dplyr::filter(osdf, status == "h")
-      pdf <- dplyr::filter(osdf, status == "p")
-      
-      h_samples <- hdf$sample
-      p_samples <- pdf$sample
-      
-      filtered_samples <- shiny::reactiveValues(h = h_samples, p = p_samples)
-      
-      tab_name_h <- htmlTissueTabName(organ = organ, status = "h")
-      tab_name_p <- htmlTissueTabName(organ = organ, status = "p")
-      
-      # ----- ORGAN SPECIFIC OBJECTS END ----- #
-      
-      # ----- FILTER BOX ----- #
-      
-      filter_tab_id_h <- stringr::str_c(tab_name_h, "tab_ui_output_filter_box", sep = "_")
-      filter_tab_id_p <- stringr::str_c(tab_name_p, "tab_ui_output_filter_box", sep = "_")
-      
-      # filter box healthy
-      output[[filter_tab_id_h]] <- shiny::renderUI({
-        
-        shiny::wellPanel(
-          htmlFilterSamplesGroupCheckboxes(source_df = osdf, organ = organ, status = "h", ncol = 6),
-          htmlBreak(1), 
-          htmlFilterSamplesActionButtons(prel_id = filter_tab_id_h)
+    shiny::tags$div(
+      class = "tab-content",
+      htmlTissueTabItems(source_df = sdf()), 
+      htmlTabItemVisualize()
+    )
+    
+  })
+  
+  shiny::observeEvent(input$add_source_file, {
+    
+    input_file <- input$add_source_file
+
+    directory <- input_file$datapath
+    
+    new_sdf <- load_data_file(directory = directory)
+    
+    new_sdf <- adjustSourceDataFrame(new_sdf)
+    
+    valid <- 
+      checkSourceDataFrame(
+        source_df = new_sdf,
+        fdb.fn = "message",
+        verbose = FALSE
         )
-        
-      })
-      
-      # filter box pathological 
-      output[[filter_tab_id_p]] <- shiny::renderUI({
-        
-        shiny::wellPanel(
-          htmlFilterSamplesGroupCheckboxes(source_df = osdf, organ = organ, status = "p", ncol = 6),
-          htmlBreak(1),
-          htmlFilterSamplesActionButtons(prel_id = filter_tab_id_p)
-        )
-        
-      })
-      
-      
-      # action button - apply filter
-      shiny::observeEvent(input[[stringr::str_c(filter_tab_id_h, "apply_filter", sep = "_")]], {
-        
-        filtered_samples$h <- 
-          filterSamples(
-            source_df = sdf,
-            input = shiny::reactiveValuesToList(input),
-            status = "h",
-            organ = organ, 
-            all = TRUE
-          )
-        
-      })
-      
-      shiny::observeEvent(input[[stringr::str_c(filter_tab_id_p, "apply_filter", sep = "_")]], {
-        
-        filtered_samples$p <- 
-          filterSamples(
-            source_df = sdf,
-            input = shiny::reactiveValuesToList(input),
-            status = "p",
-            organ = organ, 
-            all = TRUE
-          )
-        
-      })
-      
-      # action button - reset filter
-      shiny::observeEvent(input[[stringr::str_c(filter_tab_id_h, "reset_filter", sep = "_")]], {
-        
-        for(variable in confuns::vselect(filter_sample_variables, -pathology)){
-          
-          id <- stringr::str_c("filter_sample", organ, "h", variable, sep = "_")
-          
-          if(variable == "tags"){
-            
-            choices <- sourceDataFrameTags(source_df = hdf) %>% base::sort()
-            
-          } else {
-            
-            choices <- base::unique(hdf[[variable]]) %>% base::sort()
-            
-          }
-          
-          shiny::updateCheckboxGroupInput(
-            inputId = id,
-            choices = choices,
-            selected = NULL
-          )
-          
-        }
-        
-        filtered_samples$h <- h_samples
-        
-      })
-      
-      shiny::observeEvent(input[[stringr::str_c(filter_tab_id_p, "reset_filter", sep = "_")]], {
-        
-        for(variable in filter_sample_variables){
-          
-          id <- stringr::str_c("filter_sample", organ, "p", variable, sep = "_")
-          
-          if(variable == "tags"){
-            
-            choices <- sourceDataFrameTags(source_df = pdf) %>% base::sort()
-            
-          } else {
-            
-            choices <- base::unique(pdf[[variable]]) %>% base::sort()
-            
-          }
-          
-          shiny::updateCheckboxGroupInput(
-            inputId = id,
-            choices = choices,
-            selected = NULL
-          )
-          
-        }
-        
-        filtered_samples$p <- p_samples
-        
-      })
-      
-      # ----- FILTER BOX END ----- #
-      
-      
-      # ----- TISSUE BOXES ----- #
-      tissue_boxes_id_h <- stringr::str_c(tab_name_h, "tab_ui_output_tissue_boxes", sep = "_")
-      tissue_boxes_id_p <- stringr::str_c(tab_name_p, "tab_ui_output_tissue_boxes", sep = "_")
-      
-      output[[tissue_boxes_id_h]] <- shiny::renderUI({
-        
-        samples <- filtered_samples$h
-        
-        if(base::length(samples) >= 1){
-          
-          htmlOrganizeInColumns(tissue_boxes[samples], ncol = ncol) %>% 
-            shiny::tagList()  
-          
-        } else {
-          
-          shiny::tagList()
-          
-        }
-        
-      })
-      
-      output[[tissue_boxes_id_p]] <- shiny::renderUI({
-        
-        samples <- filtered_samples$p
-        
-        if(base::length(samples) >= 1){
-          
-          htmlOrganizeInColumns(tissue_boxes[samples], ncol = ncol) %>% 
-            shiny::tagList()  
-          
-        } else {
-          
-          shiny::tagList()
-          
-        }
-        
-      })
-      
-      # ----- TISSUE BOXES END ----- #
-      
-    })
     
-  }
-  
-  
-  # Tab: Tissue-Organs Server -----------------------------------------------
-  
-  sample_names <- base::unique(sdf$sample)
-  
-  for(i in base::seq_along(sample_names)){
-    
-    base::local({
+    if(base::isTRUE(valid)){
       
-      sample_name <- sample_names[i]
+      assign("new_sdf", new_sdf, envir = .GlobalEnv)
       
-      sample_df <- dplyr::filter(sdf, sample == {{sample_name}})
+      sdf(new_sdf)  
       
-      status <- sample_df$status
+      shiny::removeModal()
       
-      # create zoom button 
-      shiny::observeEvent(input[[htmlSampleId(sample_name, pref = "zoom")]], {
-        
-        shiny::showModal(
-          ui = shiny::modalDialog(
-            shiny::plotOutput(outputId = htmlSampleId(sample_name, pref = "image_zoomed"), height = "600px"), 
-            footer = shiny::tagList(
-              shiny::fluidRow(
-                htmlCol(
-                  width = 12, offset = 2,
-                  shiny::actionButton(
-                    inputId = htmlSampleId(sample_name, pref = "close", suff = "image_zoomed"), 
-                    label = "Close"
-                  )
-                )
-              )
-            ), 
-            size = "l"
+    } else {
+
+      shiny::showModal(
+        ui = shiny::modalDialog(
+          easyClose = TRUE,
+          title = glue::glue("Invalid Source File: {input_file$name}"), 
+          shiny::helpText(
+              "The input file is invalid.
+               Please choose another file or contact
+               either 'henrik.heiland@themilolab.com'
+               or 'jan.kueckelhaus@uniklinik-freiburg.de'
+               for help."
           )
         )
-        
-      })
-      
-      # create close modal button
-      shiny::observeEvent(input[[htmlSampleId(sample_name, pref = "close", suff = "image_zoomed")]], {
-        
-        shiny::removeModal()
-        
-      })
-      
-      # create download raw handler
-      download_raw_id <- htmlSampleId(sample_name, pref = "download_raw")
-      
-      output[[download_raw_id]] <- shiny::downloadHandler(
-        
-        filename = function() { stringr::str_c("visium_raw", sample_name, ".zip") }, 
-        
-        content = function(file){
-          
-          confuns::give_feedback(
-            msg = glue::glue("Downloading Raw Visium Data '{sample_name}'."),
-            in.shiny = TRUE,
-            duration = 120
-          )
-          
-          SPATAData::downloadRawData(
-            sample_names = sample_name, 
-            files = file, 
-            overwrite = TRUE,
-            verbose = FALSE,
-            source_df = sourceDataFrame()
-          )
-          
-          confuns::give_feedback(msg = "Done.", in.shiny = TRUE, duration = 10)
-          
-        }
       )
       
-      # create download spata handler
-      download_spata_id <- htmlSampleId(sample_name, pref = "download_spata")
+    }
+    
+  })
+  
+  # create tab items
+  shiny::observeEvent(sdf(), {
+    
+    confuns::give_feedback(
+      msg = "Loading tissue information.", 
+      with.time = FALSE, 
+      in.shiny = TRUE
+    )
+    
+    tissue_boxes <- htmlTissueBoxes(source_df = sdf(), ncol = ncol)
+    
+    organ_names <- base::unique(sdf()$organ)
+    
+    for(i in base::seq_along(organ_names)){
       
-      output[[download_spata_id]] <- shiny::downloadHandler(
+      base::local({ # create local environment for every organ-tab
         
-        filename = function() { stringr::str_c("spata_object_", sample_name, ".RDS") }, 
+        # ----- ORGAN SPECIFIC OBJECTS ----- #
         
-        content = function(file){
+        organ <- organ_names[i]
+        
+        osdf <- 
+          dplyr::filter(sdf(), organ == {{organ}}) %>% 
+          dplyr::arrange(hist_classification, anatomical_region, sample)
+        
+        hdf <- dplyr::filter(osdf, status == "h")
+        pdf <- dplyr::filter(osdf, status == "p")
+        
+        h_samples <- hdf$sample
+        p_samples <- pdf$sample
+        
+        filtered_samples <- shiny::reactiveValues(h = h_samples, p = p_samples)
+        
+        tab_name_h <- htmlTissueTabName(organ = organ, status = "h")
+        tab_name_p <- htmlTissueTabName(organ = organ, status = "p")
+        
+        # ----- ORGAN SPECIFIC OBJECTS END ----- #
+        
+        # ----- FILTER BOX ----- #
+        
+        filter_tab_id_h <- stringr::str_c(tab_name_h, "tab_ui_output_filter_box", sep = "_")
+        filter_tab_id_p <- stringr::str_c(tab_name_p, "tab_ui_output_filter_box", sep = "_")
+        
+        # filter box healthy
+        output[[filter_tab_id_h]] <- shiny::renderUI({
           
-          confuns::give_feedback(
-            msg = glue::glue("Downloading SPATA object '{sample_name}'."),
-            in.shiny = TRUE,
-            duration = 120
+          shiny::wellPanel(
+            htmlFilterSamplesGroupCheckboxes(source_df = osdf, organ = organ, status = "h", ncol = 6),
+            htmlBreak(1), 
+            htmlFilterSamplesActionButtons(prel_id = filter_tab_id_h)
           )
           
-          object <- 
-            SPATAData::downloadSpataObject(
-              sample_name = sample_name,
-              file = NULL, 
-              verbose = FALSE, 
-              source_df = sourceDataFrame()
+        })
+        
+        # filter box pathological 
+        output[[filter_tab_id_p]] <- shiny::renderUI({
+          
+          shiny::wellPanel(
+            htmlFilterSamplesGroupCheckboxes(source_df = osdf, organ = organ, status = "p", ncol = 6),
+            htmlBreak(1),
+            htmlFilterSamplesActionButtons(prel_id = filter_tab_id_p)
+          )
+          
+        })
+        
+        
+        # action button - apply filter
+        shiny::observeEvent(input[[stringr::str_c(filter_tab_id_h, "apply_filter", sep = "_")]], {
+          
+          filtered_samples$h <- 
+            filterSamples(
+              source_df = sdf(),
+              input = shiny::reactiveValuesToList(input),
+              status = "h",
+              organ = organ, 
+              all = TRUE
             )
           
-          saveRDS(object = object, file = file)
+        })
+        
+        shiny::observeEvent(input[[stringr::str_c(filter_tab_id_p, "apply_filter", sep = "_")]], {
           
-          confuns::give_feedback(msg = "Done.", in.shiny = TRUE, duration = 10)
+          filtered_samples$p <- 
+            filterSamples(
+              source_df = sdf(),
+              input = shiny::reactiveValuesToList(input),
+              status = "p",
+              organ = organ, 
+              all = TRUE
+            )
+          
+        })
+        
+        # action button - reset filter
+        shiny::observeEvent(input[[stringr::str_c(filter_tab_id_h, "reset_filter", sep = "_")]], {
+          
+          for(variable in confuns::vselect(filter_sample_variables, -pathology)){
+            
+            id <- stringr::str_c("filter_sample", organ, "h", variable, sep = "_")
+            
+            if(variable == "tags"){
+              
+              choices <- sourceDataFrameTags(source_df = hdf) %>% base::sort()
+              
+            } else {
+              
+              choices <- base::unique(hdf[[variable]]) %>% base::sort()
+              
+            }
+            
+            shiny::updateCheckboxGroupInput(
+              inputId = id,
+              choices = choices,
+              selected = NULL
+            )
+            
+          }
+          
+          filtered_samples$h <- h_samples
+          
+        })
+        
+        shiny::observeEvent(input[[stringr::str_c(filter_tab_id_p, "reset_filter", sep = "_")]], {
+          
+          for(variable in filter_sample_variables){
+            
+            id <- stringr::str_c("filter_sample", organ, "p", variable, sep = "_")
+            
+            if(variable == "tags"){
+              
+              choices <- sourceDataFrameTags(source_df = pdf) %>% base::sort()
+              
+            } else {
+              
+              choices <- base::unique(pdf[[variable]]) %>% base::sort()
+              
+            }
+            
+            shiny::updateCheckboxGroupInput(
+              inputId = id,
+              choices = choices,
+              selected = NULL
+            )
+            
+          }
+          
+          filtered_samples$p <- p_samples
+          
+        })
+        
+        # ----- FILTER BOX END ----- #
+        
+        
+        # ----- TISSUE BOXES ----- #
+        tissue_boxes_id_h <- stringr::str_c(tab_name_h, "tab_ui_output_tissue_boxes", sep = "_")
+        tissue_boxes_id_p <- stringr::str_c(tab_name_p, "tab_ui_output_tissue_boxes", sep = "_")
+        
+        output[[tissue_boxes_id_h]] <- shiny::renderUI({
+          
+          samples <- filtered_samples$h
+          
+          if(base::length(samples) >= 1){
+            
+            htmlOrganizeInColumns(tissue_boxes[samples], ncol = ncol) %>% 
+              shiny::tagList()  
+            
+          } else {
+            
+            shiny::tagList()
+            
+          }
+          
+        })
+        
+        output[[tissue_boxes_id_p]] <- shiny::renderUI({
+          
+          samples <- filtered_samples$p
+          
+          if(base::length(samples) >= 1){
+            
+            htmlOrganizeInColumns(tissue_boxes[samples], ncol = ncol) %>% 
+              shiny::tagList()  
+            
+          } else {
+            
+            shiny::tagList()
+            
+          }
+          
+        })
+        
+        # ----- TISSUE BOXES END ----- #
+        
+        sample_names <- c(h_samples, p_samples)
+        
+        for(i in base::seq_along(sample_names)){
+          
+          base::local({
+            
+            sample_name <- sample_names[i]
+            
+            sample_df <- dplyr::filter(sdf(), sample == {{sample_name}})
+            
+            status <- sample_df$status
+            
+            # create zoom button 
+            shiny::observeEvent(input[[htmlSampleId(sample_name, pref = "zoom", source_df = sdf())]], {
+              
+              shiny::showModal(
+                ui = shiny::modalDialog(
+                  shiny::plotOutput(outputId = htmlSampleId(sample_name, pref = "image_zoomed", source_df = sdf()), height = "600px"), 
+                  footer = shiny::tagList(
+                    shiny::fluidRow(
+                      htmlCol(
+                        width = 12, offset = 2,
+                        shiny::actionButton(
+                          inputId = htmlSampleId(sample_name, pref = "close", suff = "image_zoomed", source_df = sdf()), 
+                          label = "Close"
+                        )
+                      )
+                    )
+                  ), 
+                  size = "l"
+                )
+              )
+              
+            })
+            
+            # create close modal button
+            shiny::observeEvent(input[[htmlSampleId(sample_name, pref = "close", suff = "image_zoomed", source_df = sdf())]], {
+              
+              shiny::removeModal()
+              
+            })
+            
+            # create download raw handler
+            download_raw_id <- htmlSampleId(sample_name, pref = "download_raw", source_df = sdf())
+            
+            output[[download_raw_id]] <- shiny::downloadHandler(
+              
+              filename = function() { stringr::str_c("visium_raw", sample_name, ".zip") }, 
+              
+              content = function(file){
+                
+                confuns::give_feedback(
+                  msg = glue::glue("Downloading Raw Visium Data '{sample_name}'."),
+                  in.shiny = TRUE,
+                  duration = 120
+                )
+                
+                SPATAData::downloadRawData(
+                  sample_names = sample_name, 
+                  files = file, 
+                  overwrite = TRUE,
+                  verbose = FALSE,
+                  source_df = sourceDataFrame()
+                )
+                
+                confuns::give_feedback(msg = "Done.", in.shiny = TRUE, duration = 10)
+                
+              }
+            )
+            
+            # create download spata handler
+            download_spata_id <- htmlSampleId(sample_name, pref = "download_spata", source_df = sdf())
+            
+            output[[download_spata_id]] <- shiny::downloadHandler(
+              
+              filename = function() { stringr::str_c("spata_object_", sample_name, ".RDS") }, 
+              
+              content = function(file){
+                
+                confuns::give_feedback(
+                  msg = glue::glue("Downloading SPATA object '{sample_name}'."),
+                  in.shiny = TRUE,
+                  duration = 120
+                )
+                
+                object <- 
+                  SPATAData::downloadSpataObject(
+                    sample_name = sample_name,
+                    file = NULL, 
+                    verbose = FALSE, 
+                    source_df = sourceDataFrame()
+                  )
+                
+                saveRDS(object = object, file = file)
+                
+                confuns::give_feedback(msg = "Done.", in.shiny = TRUE, duration = 10)
+                
+              }
+            )
+            
+            # create image output
+            
+            image_id <- htmlSampleId(sample_name, pref = "image", source_df = sdf())
+            
+            output[[image_id]] <- shiny::renderPlot({
+              
+              plotSampleImage(sample_name = sample_name)
+              
+            })
+            
+            # create image zoom output 
+            image_id_zoomed <- htmlSampleId(sample_name, pref = "image_zoomed", source_df = sdf())
+            
+            output[[image_id_zoomed]] <- shiny::renderPlot({
+              
+              plotSampleImage(sample_name = sample_name)
+              
+            })
+            
+            
+            # create info button 
+            shiny::observeEvent(input[[htmlSampleId(sample_name, pref = "info", source_df = sdf())]], {
+              
+              shiny::updateTabsetPanel(session = session, inputId = "visualize", selected = "visualize")
+              
+            })
+            
+            # create plot button
+            shiny::observeEvent(input[[htmlSampleId(sample_name, pref = "plot", source_df = sdf())]], {
+              
+              shinydashboard::updateTabItems(session = session, inputId = "sidebar", selected = "visualize")
+              
+              object <- downloadSpataObject(sample_name = sample_name, file = NULL, in_shiny = TRUE)
+              
+              spata_object(object)
+              
+            })
+            
+          })
           
         }
-      )
-      
-      # create image output
-      
-      image_id <- htmlSampleId(sample_name, pref = "image")
-      
-      output[[image_id]] <- shiny::renderPlot({
-        
-        plotSampleImage(sample_name = sample_name)
         
       })
       
-      # create image zoom output 
-      image_id_zoomed <- htmlSampleId(sample_name, pref = "image_zoomed")
-      
-      output[[image_id_zoomed]] <- shiny::renderPlot({
-        
-        plotSampleImage(sample_name = sample_name)
-        
-      })
-      
-      
-      # create info button 
-      shiny::observeEvent(input[[htmlSampleId(sample_name, pref = "info")]], {
-        
-        shiny::updateTabsetPanel(session = session, inputId = "visualize", selected = "visualize")
-        
-      })
-      
-      # create plot button
-      shiny::observeEvent(input[[htmlSampleId(sample_name, pref = "plot")]], {
-        
-        shinydashboard::updateTabItems(session = session, inputId = "sidebar", selected = "visualize")
-        
-        object <- downloadSpataObject(sample_name = sample_name, file = NULL, in_shiny = TRUE)
-        
-        spata_object(object)
-        
-      })
-      
-    })
+    }
     
-  }
-  
+    confuns::give_feedback(
+      msg = "Done.", 
+      in.shiny = TRUE,
+      with.time = FALSE
+    )
+
+  })
   
   # Tab: Visualization ------------------------------------------------------
   

@@ -119,6 +119,98 @@ adjustSampleManually <- function(source_df = sourceDataFrame(),
 }
 
 
+#' @export
+adjustSourceDataFrame <- function(source_df = sourceDataFrame()){
+  
+  dplyr::mutate(
+    .data = source_df, 
+    dplyr::across(
+      .cols = dplyr::starts_with("link"), 
+      .fns = base::as.character
+    )
+  )
+  
+}
+
+#' @export
+checkSourceDataFrame <- function(source_df = sourceDataFrame(), ...){
+  
+  chr_vars <- c(selectize_variables, text_variables, "tags")
+  num_vars <- c("stage")
+  
+  confuns::check_data_frame(
+    df = source_df, 
+    var.class = 
+      list(
+        purrr::map(
+          .x = chr_vars,
+          .f = function(v){ "character"}
+        ) %>%
+          purrr::set_names(nm = chr_vars),
+        purrr::map(
+          .x = num_vars, 
+          .f = function(v){ "numeric"}
+        ) %>% 
+          purrr::set_names(nm = num_vars)
+      ) %>% 
+      purrr::flatten(), 
+    ...
+  )
+  
+}
+
+#' @export
+load_data_file <- function(directory){
+  
+  if(stringr::str_detect(string = directory, pattern = ".csv$")){
+    
+    df <- 
+      base::suppressMessages({
+        
+        base::suppressWarnings({
+          
+          readr::read_csv(file = directory)
+          
+        })
+        
+      })
+    
+  }
+  
+  if(stringr::str_detect(string = directory, pattern = ".xlsx$")){
+    
+    df <- readxl::read_xlsx(path = directory, sheet = 1)
+    
+  }
+  
+  if(stringr::str_detect(string = directory, pattern = ".xls")){
+    
+    df <- readxl::read_xls(path = directory, sheet = 1)
+    
+  }
+  
+  if(stringr::str_detect(string = directory, pattern = ".txt")){
+    
+    df <- utils::read.delim(file = directory, header = TRUE)
+    
+  }
+  
+  if(stringr::str_detect(string = directory, pattern = ".RDS$")){
+    
+    df <- base::readRDS(file = directory)
+    
+  }
+  
+  if(tibble::has_rownames(df)){
+    
+    df <- tibble::rownames_to_column(df, var = "rownames")
+    
+  }
+  
+  return(df)
+  
+}
+
 
 #' @title Plot the sample image
 plotSampleImage <- function(sample_name, which = "lowres"){
@@ -127,7 +219,7 @@ plotSampleImage <- function(sample_name, which = "lowres"){
     sourceDataFrame(sample = sample_name) %>% 
     dplyr::pull(var = "link_image")
   
-  if(base::is.character(link_image)){
+  if(base::length(link_image) == 1 && !base::is.na(link_image)){
     
     img <- 
       base::tryCatch({

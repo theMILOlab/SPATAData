@@ -14,7 +14,15 @@ launchSpataDataUI <- function(path_css = "C:\\Informatics\\R-Folder\\Packages\\S
     
     shinydashboard::dashboardBody(
 
-      shinybusy::add_busy_spinner(spin = "cube-grid", color = "red"),
+      shinybusy::add_busy_spinner(
+        spin = "cube-grid",
+        color = "red",
+        height = "100px", 
+        width = "100px",
+        margins = c(500, 950),
+        position = "bottom-right",
+        timeout = 100
+        ),
 
       shiny::tags$div(class = "tab-content",
 
