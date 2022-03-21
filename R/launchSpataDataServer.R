@@ -75,8 +75,6 @@ launchSpataDataServer <- function(input, output, session){
     
     if(base::isTRUE(valid)){
       
-      assign("new_sdf", new_sdf, envir = .GlobalEnv)
-      
       sdf(new_sdf)  
       
       shiny::removeModal()
@@ -560,8 +558,6 @@ launchSpataDataServer <- function(input, output, session){
   output$surface_plot <- shiny::renderPlot({
     
     shiny::req(color_by())
-    
-    #assign(x = "input", value = reactiveValuesToList(input), envir = .GlobalEnv)
     
     SPATA2::plotSurface(
       object = active_spata_object(),
