@@ -1,23 +1,6 @@
 
 
 
-# organs as vector --------------------------------------------------------
-male_organs <- 
-  gganatogram::hgMale_key %>% 
-  dplyr::pull(organ) %>% 
-  base::sort()
-
-female_organs <- 
-  gganatogram::hgFemale_key %>% 
-  dplyr::pull(organ) %>% 
-  base::sort()
-
-all_organs <- 
-  base::unique(c(female_organs, male_organs)) %>% 
-  confuns::vselect(-dplyr::ends_with("Cortex")) %>% # belongs to anatomical region
-  confuns::make_pretty_names()
-
-
 
 # passwords ---------------------------------------------------------------
 
