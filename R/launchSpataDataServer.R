@@ -40,7 +40,8 @@ launchSpataDataServer <- function(input, output, session){
       ),
       shinydashboard::menuItem(text = "Visualize", tabName = "visualize"), 
       shinydashboard::menuItem(text = "SPATA Framework", tabName = "spata_framework"), 
-      shinydashboard::menuItem(text = "FAQ", tabName = "faq")
+      shinydashboard::menuItem(text = "FAQ", tabName = "faq"), 
+      shiny::actionButton(inputId = "restart_app", label = "Restart App")
       
     )
     
@@ -507,5 +508,6 @@ launchSpataDataServer <- function(input, output, session){
       SPATA2::ggpLayerFrameByImage(object = active_spata_object())
     
   })
+
   
 }

@@ -554,9 +554,3 @@ str_extract_after <- function(string,
 
 
 
-#' @export
-printPasswords <- function(){print(password_list)}
-
-
-
-
