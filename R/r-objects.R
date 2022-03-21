@@ -19,6 +19,12 @@ all_organs <-
 
 
 
+# passwords ---------------------------------------------------------------
+
+
+password_list <- base::readRDS(file = "data_private/passwords.RDS")
+
+
 
 # variables for selectize input -------------------------------------------
 

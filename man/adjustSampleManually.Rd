@@ -32,3 +32,15 @@ The updated data.frame is returned invisibly.
 Instead of adding a new sample the samples info can be 
 manually adjusted using this function.
 }
+\examples{
+
+ # adjust image link
+ 
+ adjustSampleManually(
+    source_df = sourceDataFrame(), # default 
+    sample_name = "275_T", 
+    adjust_sample_input = list(link_image = "https://some-link-to-image.jpeg?dl=1")
+    update = TRUE # immediately saves the result in /data/source_df.rda
+    )
+
+}

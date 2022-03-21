@@ -68,6 +68,17 @@ addSampleTagsManually <- function(source_df = sourceDataFrame(),
 #' corresponds to the variable of \code{source_df} that is supposed
 #' to be adjusted. 
 #' @inherit addSampleManually params return
+#' 
+#' @examples 
+#' 
+#'  # adjust image link
+#'  
+#'  adjustSampleManually(
+#'     source_df = sourceDataFrame(), # default 
+#'     sample_name = "275_T", 
+#'     adjust_sample_input = list(link_image = "https://some-link-to-image.jpeg?dl=1")
+#'     update = TRUE # immediately saves the result in /data/source_df.rda
+#'     )
 #'
 adjustSampleManually <- function(source_df = sourceDataFrame(), 
                                  sample_name,
@@ -446,6 +457,7 @@ WHOGrades <- function(x, suffixes = NULL, combine = FALSE){
 
 # string handling ---------------------------------------------------------
 
+#' @export
 rgx_lookahead <- function(pattern, negate = FALSE, match = ".*"){
   
   if(base::isFALSE(negate)){
@@ -462,6 +474,7 @@ rgx_lookahead <- function(pattern, negate = FALSE, match = ".*"){
   
 }
 
+#' @export
 rgx_lookbehind <- function(pattern, negate = FALSE, match = ".*"){
   
   if(base::isFALSE(negate)){
@@ -478,6 +491,7 @@ rgx_lookbehind <- function(pattern, negate = FALSE, match = ".*"){
   
 }
 
+#' @export
 str_extract_before <- function(string,
                                pattern,
                                match = "^.*",
@@ -507,6 +521,7 @@ str_extract_before <- function(string,
   
 }
 
+#' @export
 str_extract_after <- function(string,
                               pattern,
                               match = ".*$",
@@ -539,8 +554,8 @@ str_extract_after <- function(string,
 
 
 
-
-
+#' @export
+printPasswords <- function(){print(password_list)}
 
 
 

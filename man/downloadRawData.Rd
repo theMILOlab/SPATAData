@@ -9,6 +9,7 @@ downloadRawData(
   files = NULL,
   folder = base::getwd(),
   overwrite = FALSE,
+  in_shiny = FALSE,
   verbose = TRUE,
   ...
 )
