@@ -44,7 +44,7 @@ launchSpataDataServer <- function(input, output, session){
     
   })
   
-  # Tab: Tissue-Organs UI ----------------------------------------------------
+  # Tab: Tissue-Organs  ------------------------------------------------------
   
   output$all_tab_items <- shiny::renderUI({
     
@@ -294,6 +294,7 @@ launchSpataDataServer <- function(input, output, session){
         
         # ----- TISSUE BOXES END ----- #
         
+        # ----- TAB ITEM OUTPUTS ----- #
         sample_names <- c(h_samples, p_samples)
         
         for(i in base::seq_along(sample_names)){
@@ -435,6 +436,9 @@ launchSpataDataServer <- function(input, output, session){
           })
           
         }
+        
+        # ----- TAB ITEM OUTPUTS END ----- #
+        
         
       })
       
