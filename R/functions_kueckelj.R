@@ -37,11 +37,9 @@ is_creatable <- function(file){
 #' @return Character vector.
 #' @export
 #'
-validSampleNames <- function(type = "SPATA"){
+validSampleNames <- function(){
 
-  list.data() %>%
-    dplyr::filter(Data_Type == {{type}}) %>% 
-    dplyr::pull(Sample) %>% 
+    dplyr::pull(SPATAData::source_df, sample) %>% 
     base::unique()
 
 }
@@ -114,8 +112,8 @@ getCitationBySample <- function(sample_names = validSampleNames()){
     .x = sample_names,
     .f = function(sample){
 
-      dplyr::filter(list.data(), Sample == {{sample}}) %>%
-        dplyr::pull(Citation) %>%
+      dplyr::filter(sourceDataFrame(), sample == {{sample}}) %>%
+        dplyr::pull(citation) %>%
         base::unique()
 
     }
@@ -157,12 +155,16 @@ getCitationBySample <- function(sample_names = validSampleNames()){
 #'
 #' # download AND assign
 #' object <- downloadSpataObject(sample_name = "275_T")
+#' 
+#' # only assign 
+#' object <- downloadSpataObject(sample_name = "275_T", file = NULL)
 #'
 #'
 downloadSpataObject <- function(sample_name,
                                 overwrite = FALSE,
                                 folder = base::getwd(),
                                 file = stringr::str_c(sample_name, ".RDS"),
+                                in_shiny = FALSE,
                                 verbose = TRUE,
                                 ...){
 
@@ -174,19 +176,28 @@ downloadSpataObject <- function(sample_name,
 
   if(base::is.null(source_df)){
 
-    source_df <- list.data()
+    source_df <- sourceDataFrame()
 
   }
 
   confuns::check_one_of(
     input = sample_name,
-    against = base::unique(source_df$Sample)
+    against = base::unique(source_df$sample)
   )
 
   download_dir <-
-    dplyr::filter(source_df, Sample == {{sample_name}}) %>%
-    dplyr::filter(Data_Type == "SPATA") %>%
-    dplyr::pull(Link)
+    dplyr::filter(source_df, sample == {{sample_name}}) %>%
+    dplyr::pull(link_spata)
+  
+  if(!shiny::isTruthy(download_dir)){
+    
+    confuns::give_feedback(
+      msg = glue::glue("Could not find valid link to spata object for sample {sample_name}."), 
+      fdb.fn = "stop", 
+      in.shiny = in_shiny
+    )
+    
+  }
 
   if(base::is.character(file)){
 
@@ -239,7 +250,8 @@ downloadSpataObject <- function(sample_name,
 
   confuns::give_feedback(
     msg = glue::glue("Downloading spata object '{sample_name}' from '{download_dir}'."),
-    verbose = verbose
+    verbose = verbose, 
+    in.shiny = in_shiny
     )
 
   downloaded_object <-
@@ -251,11 +263,15 @@ downloadSpataObject <- function(sample_name,
     verbose = verbose
   )
 
-  downloaded_object <- SPATA2::updateSpataObject(downloaded_object)
+  if(!base::isFALSE(list(...)[["update"]])){
+    
+    downloaded_object <- SPATA2::updateSpataObject(downloaded_object)
+    
+  }
 
   citation <-
-    dplyr::filter(source_df, Sample == {{sample_name}}) %>%
-    dplyr::pull(Citation) %>%
+    dplyr::filter(source_df, sample == {{sample_name}}) %>%
+    dplyr::pull(citation) %>%
     base::unique()
 
   downloaded_object <- setCitation(downloaded_object, citation = citation)
@@ -314,6 +330,7 @@ downloadSpataObjects <- function(sample_names,
                                  files = NULL,
                                  folder = base::getwd(),
                                  overwrite = FALSE,
+                                 in_shiny = FALSE,
                                  verbose = TRUE,
                                  ...){
 
@@ -323,7 +340,7 @@ downloadSpataObjects <- function(sample_names,
 
   if(base::is.null(source_df)){
 
-    source_df <- list.data()
+    source_df <- sourceDataFrame()
 
   }
 
@@ -339,7 +356,7 @@ downloadSpataObjects <- function(sample_names,
 
   confuns::check_one_of(
     input = sample_names,
-    against = base::unique(source_df$Sample)
+    against = base::unique(source_df$sample)
   )
   
   if(!base::dir.exists(folder)){
@@ -404,17 +421,17 @@ downloadSpataObjects <- function(sample_names,
         .f = function(sample, file){
 
           download_dir <-
-            dplyr::filter(source_df, Sample == {{sample}} & Data_Type == "SPATA") %>%
-            dplyr::pull(Link)
+            dplyr::filter(source_df, sample == {{sample}}) %>%
+            dplyr::pull(link_spata)
 
           citation <-
-            dplyr::filter(source_df, Sample == {{sample}} & Data_Type == "SPATA") %>%
-            dplyr::pull(Citation) %>%
-            base::unique()
+            dplyr::filter(source_df, sample == {{sample}}) %>%
+            dplyr::pull(citation) 
 
           confuns::give_feedback(
             msg = glue::glue("Downloading sample {sample} from '{download_dir}'."),
-            verbose = verbose
+            verbose = verbose,
+            in.shiny = in_shiny
             )
 
           # download and save immediately
@@ -451,7 +468,7 @@ downloadSpataObjects <- function(sample_names,
 
     msg <- glue::glue("Download of sample '{sample}' failed with error message: {error}")
 
-    confuns::give_feedback(msg = msg, verbose = verbose)
+    confuns::give_feedback(msg = msg, verbose = verbose, in.shiny = in_shiny)
 
   }
 
@@ -460,7 +477,7 @@ downloadSpataObjects <- function(sample_names,
     base::names() %>%
     confuns::scollapse()
 
-  msg <- glue::glue("Successfully downloaded '{successful_downloads}'.")
+  msg <- glue::glue("Successfully downloaded '{successful_downloads}'.", in.shiny = in_shiny)
 
   confuns::give_feedback(msg = msg, verbose = TRUE)
 
@@ -490,6 +507,7 @@ downloadRawData <- function(sample_names,
                             files = NULL,
                             folder = base::getwd(),
                             overwrite = FALSE,
+                            in_shiny = FALSE,
                             verbose = TRUE, 
                             ...){
 
@@ -499,15 +517,24 @@ downloadRawData <- function(sample_names,
   
   if(base::is.null(source_df)){
     
-    source_df <- list.data()
+    source_df <- sourceDataFrame()
+    
+  }
+  
+  source_df <- dplyr::filter(source_df, shiny::isTruthy(link_raw))
+  
+  if(base::nrow(source_df) == 0){
+    
+    stop("No links to raw data found.")
     
   }
   
   confuns::check_one_of(
     input = sample_names,
-    against = dplyr::filter(source_df, Data_Type == "RAW") %>% dplyr::pull(Sample),
+    against = source_df$sample,
     fdb.opt = 2,
-    ref.opt.2 = "samples for which raw data is available"
+    ref.opt.2 = "samples for which raw data is available",
+    in.shiny = in_shiny
   )
 
   if(base::is.character(files)){
@@ -550,12 +577,13 @@ downloadRawData <- function(sample_names,
         .f = function(sample, file){
 
           download_dir <-
-            dplyr::filter(.data = source_df, Sample == {{sample}} & Data_Type == "RAW") %>%
-            dplyr::pull(Link)
+            dplyr::filter(.data = source_df, sample == {{sample}}) %>%
+            dplyr::pull(link_raw)
 
           confuns::give_feedback(
             msg = glue::glue("Downloading RAW data of sample '{sample}' from '{download_dir}' and saving under '{file}'."),
-            verbose = verbose
+            verbose = verbose, 
+            in.shiny = in_shiny
           )
 
           downloader::download(url = download_dir, dest = file, mode = "wb")
@@ -584,7 +612,7 @@ downloadRawData <- function(sample_names,
 
     msg <- glue::glue("Download of sample '{sample}' failed with error message: {error}")
 
-    confuns::give_feedback(msg = msg, verbose = verbose)
+    confuns::give_feedback(msg = msg, verbose = verbose, in.shiny = in_shiny)
 
   }
 
@@ -594,6 +622,8 @@ downloadRawData <- function(sample_names,
     confuns::scollapse()
 
   msg <- glue::glue("Successfully downloaded '{successful_downloads}'.")
+  
+  confuns::give_feedback(msg = msg, verbose = verbose, in.shiny = in_shiny)
 
   base::invisible(TRUE)
 
