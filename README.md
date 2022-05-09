@@ -69,13 +69,6 @@ downloadSpataObjects(sample_names = c("275_T", "334_T"), folder = "objects")
 
 ```
 
-Raw 10X Visium output can be downloaded via:
-
-```
-downloadRawData(sample_names = c("275_T", "334_T"), folder = "raw_data")
-
-```
-
 ## Citation
 
 To obtain proper citation: 
