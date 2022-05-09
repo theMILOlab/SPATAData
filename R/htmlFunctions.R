@@ -293,7 +293,7 @@ htmlTissueBox <- function(sample_name, organ, status, width = 4, source_df = sou
         htmlCol(5,
                 shiny::splitLayout(
                   shiny::downloadButton(outputId = id_download_spata, label = "SPATA2", width = "100%"), 
-                  shiny::downloadButton(outputId = id_download_raw, label = "RAW", width = "100%"),
+                  #shiny::downloadButton(outputId = id_download_raw, label = "RAW", width = "100%"),
                   cellWidths = c("50%")
                 )
         ),
