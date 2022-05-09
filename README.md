@@ -46,16 +46,14 @@ This function provides access to a shiny application in which all available samp
 are listed and displayed - sorted by organ, pathology and additional meta data.
 
 
-## Code
+## Downloading
 
-If you want to obtain available sample names:
+To obtain valid input options for samples names: 
 
 ```
 validSampleNames()
 
 ```
-
-## Downloading
 
 S4 spata objects can be downloaded via: 
 
