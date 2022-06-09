@@ -119,7 +119,6 @@ adjustSampleManually <- function(source_df = sourceDataFrame(),
 }
 
 
-#' @export
 adjustSourceDataFrame <- function(source_df = sourceDataFrame()){
   
   dplyr::mutate(
@@ -132,7 +131,6 @@ adjustSourceDataFrame <- function(source_df = sourceDataFrame()){
   
 }
 
-#' @export
 checkSourceDataFrame <- function(source_df = sourceDataFrame(), ...){
   
   chr_vars <- c(selectize_variables, text_variables, "tags")
@@ -159,7 +157,6 @@ checkSourceDataFrame <- function(source_df = sourceDataFrame(), ...){
   
 }
 
-#' @export
 load_data_file <- function(directory){
   
   if(stringr::str_detect(string = directory, pattern = ".csv$")){
@@ -212,7 +209,6 @@ load_data_file <- function(directory){
 }
 
 
-#' @title Plot the sample image
 plotSampleImage <- function(sample_name, which = "lowres"){
   
   if(FALSE){
@@ -289,7 +285,6 @@ plotSampleImage <- function(sample_name, which = "lowres"){
 #' pathological. \emph{'h'} equals healthy. 
 #'
 #' @return Data.frame.
-#' @export
 #'
 sourceDataFrame <- function(organ = NULL, status = NULL, sample = NULL){
   
@@ -326,7 +321,6 @@ sourceDataFrame <- function(organ = NULL, status = NULL, sample = NULL){
 #' @param sample_name Character value. The sample of interest.
 #'
 #' @return Character vector.
-#' @export
 #'
 sourceDataFrameTags <- function(source_df = sourceDataFrame(), sample_name = NULL){
   
@@ -349,7 +343,6 @@ sourceDataFrameTags <- function(source_df = sourceDataFrame(), sample_name = NUL
 
 
 #' @rdname sourceDataFrameTags
-#' @export
 sourceDataFrameOrgans <- function(source_df = sourceDataFrame()){
   
   source_df$organ %>% base::unique()
