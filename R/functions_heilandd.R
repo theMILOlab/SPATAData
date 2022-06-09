@@ -4,8 +4,6 @@
 #' @param type Can be either 'SPATA' to download the Spata objects or 'RAW' for access the raw data 
 #' @return 
 #' 
-#' @export
-#' 
 
 getData <- function(sample_name, folder=NULL, type="SPATA"){
   
@@ -93,7 +91,6 @@ getData <- function(sample_name, folder=NULL, type="SPATA"){
 #' @author Dieter Henrik Heiland
 #' @description list.data
 #' @return 
-#' @export
 #' 
 loadData <- function(sample_name, folder){
   
@@ -110,7 +107,6 @@ loadData <- function(sample_name, folder){
 #' @description list.data
 #' @return 
 #' 
-#' @export
 #' 
 list.data <- function(){
   
@@ -148,7 +144,6 @@ list.data <- function(){
 #' @description CleanObject
 #' @return 
 #' 
-#' @export
 #'
 
 cleanObject <- function(object){
@@ -169,7 +164,6 @@ cleanObject <- function(object){
 #' @description AddSourceFile
 #' @return 
 #' 
-#' @export
 #'
 
 addSourceFile <- function(source.csv){
