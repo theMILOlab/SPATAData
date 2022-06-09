@@ -2,6 +2,8 @@
 
 
 
+
+# a -----------------------------------------------------------------------
 #' @title Add sample tags manually
 #' 
 #' @description Adds tags to a sample. 
@@ -131,6 +133,9 @@ adjustSourceDataFrame <- function(source_df = sourceDataFrame()){
   
 }
 
+
+# c -----------------------------------------------------------------------
+
 checkSourceDataFrame <- function(source_df = sourceDataFrame(), ...){
   
   chr_vars <- c(selectize_variables, text_variables, "tags")
@@ -157,56 +162,91 @@ checkSourceDataFrame <- function(source_df = sourceDataFrame(), ...){
   
 }
 
-load_data_file <- function(directory){
+
+
+# g -----------------------------------------------------------------------
+
+#' @title Obtain citation info
+#'
+#' @description If you have used a downloadable spata object
+#' please use this function to obtain the proper
+#' form of citation to give credits to the researchers who
+#' made this data available
+#'
+#' @inherit SPATA2::argument_dummy params
+#' @param sample_names Character vector of sample names for which
+#' you want to obtain the correct citation.
+#'
+#' @return Citation in form of character vectors or a list of such.
+#'
+#' @export
+#'
+
+getCitation <- function(object){
   
-  if(stringr::str_detect(string = directory, pattern = ".csv$")){
+  citation <- object@information$citation
+  
+  if(!base::is.character(citation)){
     
-    df <- 
-      base::suppressMessages({
-        
-        base::suppressWarnings({
-          
-          readr::read_csv(file = directory)
-          
-        })
-        
-      })
+    warning("No citation found. Returning NULL.")
+    
+    citation <- NULL
     
   }
   
-  if(stringr::str_detect(string = directory, pattern = ".xlsx$")){
-    
-    df <- readxl::read_xlsx(path = directory, sheet = 1)
-    
-  }
-  
-  if(stringr::str_detect(string = directory, pattern = ".xls")){
-    
-    df <- readxl::read_xls(path = directory, sheet = 1)
-    
-  }
-  
-  if(stringr::str_detect(string = directory, pattern = ".txt")){
-    
-    df <- utils::read.delim(file = directory, header = TRUE)
-    
-  }
-  
-  if(stringr::str_detect(string = directory, pattern = ".RDS$")){
-    
-    df <- base::readRDS(file = directory)
-    
-  }
-  
-  if(tibble::has_rownames(df)){
-    
-    df <- tibble::rownames_to_column(df, var = "rownames")
-    
-  }
-  
-  return(df)
+  return(citation)
   
 }
+
+#' @rdname getCitation
+#' @export
+getCitationBySample <- function(sample_names = validSampleNames()){
+  
+  confuns::check_one_of(
+    input = sample_names,
+    against = validSampleNames()
+  )
+  
+  purrr::map(
+    .x = sample_names,
+    .f = function(sample){
+      
+      dplyr::filter(sourceDataFrame(), sample == {{sample}}) %>%
+        dplyr::pull(citation) %>%
+        base::unique()
+      
+    }
+  ) %>%
+    purrr::set_names(nm = sample_names)
+  
+}
+
+
+
+# i -----------------------------------------------------------------------
+
+is_creatable <- function(file){
+  
+  base::tryCatch({
+    
+    base::saveRDS(object = list(), file = file)
+    
+    base::file.remove(file)
+    
+    TRUE
+    
+  }, error = function(error){
+    
+    FALSE
+    
+  })
+  
+}
+
+
+
+
+# p -----------------------------------------------------------------------
 
 
 plotSampleImage <- function(sample_name, which = "lowres"){
@@ -271,9 +311,70 @@ plotSampleImage <- function(sample_name, which = "lowres"){
     
   }
   
-
+  
   
 }
+
+
+
+
+
+
+
+
+
+load_data_file <- function(directory){
+  
+  if(stringr::str_detect(string = directory, pattern = ".csv$")){
+    
+    df <- 
+      base::suppressMessages({
+        
+        base::suppressWarnings({
+          
+          readr::read_csv(file = directory)
+          
+        })
+        
+      })
+    
+  }
+  
+  if(stringr::str_detect(string = directory, pattern = ".xlsx$")){
+    
+    df <- readxl::read_xlsx(path = directory, sheet = 1)
+    
+  }
+  
+  if(stringr::str_detect(string = directory, pattern = ".xls")){
+    
+    df <- readxl::read_xls(path = directory, sheet = 1)
+    
+  }
+  
+  if(stringr::str_detect(string = directory, pattern = ".txt")){
+    
+    df <- utils::read.delim(file = directory, header = TRUE)
+    
+  }
+  
+  if(stringr::str_detect(string = directory, pattern = ".RDS$")){
+    
+    df <- base::readRDS(file = directory)
+    
+  }
+  
+  if(tibble::has_rownames(df)){
+    
+    df <- tibble::rownames_to_column(df, var = "rownames")
+    
+  }
+  
+  return(df)
+  
+}
+
+
 
 
 #' @title Obtain the SPATAData \code{source_df}
@@ -460,6 +561,163 @@ filterSamples <- function(source_df = sourceDataFrame(), input, organ, status, a
 
 
 
+
+
+# r -----------------------------------------------------------------------
+
+#' @export
+rgx_lookahead <- function(pattern, negate = FALSE, match = ".*"){
+  
+  if(base::isFALSE(negate)){
+    
+    out <- stringr::str_c(match, "(?=", pattern, ")", sep = "")
+    
+  } else if(base::isTRUE(negate)){
+    
+    out <- stringr::str_c(match, "(?!=", pattern = ")", sep = "")
+    
+  }
+  
+  return(out)
+  
+}
+
+#' @export
+rgx_lookbehind <- function(pattern, negate = FALSE, match = ".*"){
+  
+  if(base::isFALSE(negate)){
+    
+    out <- stringr::str_c("(?<=", pattern, ")", match, sep = "")
+    
+  } else if(base::isTRUE(negate)){
+    
+    out <- stringr::str_c("(?!<=", pattern = ")", match, sep = "")
+    
+  }
+  
+  return(out)
+  
+}
+
+
+
+# s -----------------------------------------------------------------------
+
+#' @title Set citation info
+#'
+#' @description Sets information about how to cite this
+#' spata object.
+#'
+#' @inherit SPATA2::argument_dummy params
+#' @param citation Character value.
+#'
+#' @return An updated spata object.
+#' @export
+#'
+setCitation <- function(object, citation){
+  
+  confuns::is_value(x = citation, mode = "character")
+  
+  object@information$citation <- citation
+  
+  return(object)
+  
+}
+
+
+
+#' @export
+str_extract_before <- function(string,
+                               pattern,
+                               match = "^.*",
+                               negate = FALSE,
+                               cut.right = TRUE,
+                               cut.left = TRUE){
+  
+  out <- 
+    stringr::str_extract(
+      string = string, 
+      pattern = rgx_lookahead(pattern = pattern, negate = negate, match = match)
+    )
+  
+  if(base::isTRUE(cut.right)){
+    
+    out <- stringr::str_remove(out, pattern = " *$")
+    
+  }
+  
+  if(base::isTRUE(cut.left)){
+    
+    out <- stringr::str_remove(out, pattern = "^ *")
+    
+  }
+  
+  return(out)
+  
+}
+
+#' @export
+str_extract_after <- function(string,
+                              pattern,
+                              match = ".*$",
+                              negate = FALSE,
+                              cut.right = TRUE,
+                              cut.left = TRUE){
+  
+  out <- 
+    stringr::str_extract(
+      string = string,
+      pattern = rgx_lookbehind(pattern = pattern, negate = negate, match = match)
+    )
+  
+  if(base::isTRUE(cut.right)){
+    
+    out <- stringr::str_remove(out, pattern = " *$")
+    
+  }
+  
+  if(base::isTRUE(cut.left)){
+    
+    out <- stringr::str_remove(out, pattern = "^ *")
+    
+  }
+  
+  return(out)
+  
+}
+
+
+
+
+# v -----------------------------------------------------------------------
+
+#' @title Valid sample names
+#'
+#' @description Returns the sample names of the samples that you can download
+#' via \code{downloadSpataObject()}, \code{downloadSpataObject()}, 
+#' \code{downloadRawData()}.
+#' 
+#' @param type Character value. If \emph{'SPATA'} returns valid input
+#' options when it comes to download spata objects. If \emph{'RAW'}
+#' returns valid input options when it comes to download 
+#' whole raw 10X Visium data sets.
+#'
+#' @return Character vector.
+#' @export
+#'
+validSampleNames <- function(){
+  
+  dplyr::pull(SPATAData::source_df, sample) %>% 
+    base::unique()
+  
+}
+
+
+
+# w -----------------------------------------------------------------------
+
+
+
 #' @title Create vectors of WHO-Grades
 #'
 #' @export
@@ -563,102 +821,6 @@ WHOGrades <- function(x, suffixes = NULL, combine = FALSE){
   
 }
 
-
-# string handling ---------------------------------------------------------
-
-#' @export
-rgx_lookahead <- function(pattern, negate = FALSE, match = ".*"){
-  
-  if(base::isFALSE(negate)){
-    
-    out <- stringr::str_c(match, "(?=", pattern, ")", sep = "")
-    
-  } else if(base::isTRUE(negate)){
-    
-    out <- stringr::str_c(match, "(?!=", pattern = ")", sep = "")
-    
-  }
-  
-  return(out)
-  
-}
-
-#' @export
-rgx_lookbehind <- function(pattern, negate = FALSE, match = ".*"){
-  
-  if(base::isFALSE(negate)){
-    
-    out <- stringr::str_c("(?<=", pattern, ")", match, sep = "")
-    
-  } else if(base::isTRUE(negate)){
-    
-    out <- stringr::str_c("(?!<=", pattern = ")", match, sep = "")
-    
-  }
-  
-  return(out)
-  
-}
-
-#' @export
-str_extract_before <- function(string,
-                               pattern,
-                               match = "^.*",
-                               negate = FALSE,
-                               cut.right = TRUE,
-                               cut.left = TRUE){
-  
-  out <- 
-    stringr::str_extract(
-      string = string, 
-      pattern = rgx_lookahead(pattern = pattern, negate = negate, match = match)
-    )
-  
-  if(base::isTRUE(cut.right)){
-    
-    out <- stringr::str_remove(out, pattern = " *$")
-    
-  }
-  
-  if(base::isTRUE(cut.left)){
-    
-    out <- stringr::str_remove(out, pattern = "^ *")
-    
-  }
-  
-  return(out)
-  
-}
-
-#' @export
-str_extract_after <- function(string,
-                              pattern,
-                              match = ".*$",
-                              negate = FALSE,
-                              cut.right = TRUE,
-                              cut.left = TRUE){
-  
-  out <- 
-    stringr::str_extract(
-      string = string,
-      pattern = rgx_lookbehind(pattern = pattern, negate = negate, match = match)
-    )
-  
-  if(base::isTRUE(cut.right)){
-    
-    out <- stringr::str_remove(out, pattern = " *$")
-    
-  }
-  
-  if(base::isTRUE(cut.left)){
-    
-    out <- stringr::str_remove(out, pattern = "^ *")
-    
-  }
-  
-  return(out)
-  
-}
 
 
 

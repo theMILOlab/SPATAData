@@ -2,129 +2,6 @@
 
 
 
-# helper ------------------------------------------------------------------
-
-is_creatable <- function(file){
-
-  base::tryCatch({
-
-    base::saveRDS(object = list(), file = file)
-
-    base::file.remove(file)
-
-    TRUE
-
-  }, error = function(error){
-
-    FALSE
-
-  })
-
-}
-
-
-#' @title Valid sample names
-#'
-#' @description Returns the sample names of the samples that you can download
-#' via \code{downloadSpataObject()}, \code{downloadSpataObject()}, 
-#' \code{downloadRawData()}.
-#' 
-#' @param type Character value. If \emph{'SPATA'} returns valid input
-#' options when it comes to download spata objects. If \emph{'RAW'}
-#' returns valid input options when it comes to download 
-#' whole raw 10X Visium data sets.
-#'
-#' @return Character vector.
-#' @export
-#'
-validSampleNames <- function(){
-
-    dplyr::pull(SPATAData::source_df, sample) %>% 
-    base::unique()
-
-}
-
-
-
-#' @title Set citation info
-#'
-#' @description Sets information about how to cite this
-#' spata object.
-#'
-#' @inherit SPATA2::argument_dummy params
-#' @param citation Character value.
-#'
-#' @return An updated spata object.
-#' @export
-#'
-setCitation <- function(object, citation){
-
-  confuns::is_value(x = citation, mode = "character")
-
-  object@information$citation <- citation
-
-  return(object)
-
-}
-
-#' @title Obtain citation info
-#'
-#' @description If you have used a downloadable spata object
-#' please use this function to obtain the proper
-#' form of citation to give credits to the researchers who
-#' made this data available
-#'
-#' @inherit SPATA2::argument_dummy params
-#' @param sample_names Character vector of sample names for which
-#' you want to obtain the correct citation.
-#'
-#' @return Citation in form of character vectors or a list of such.
-#'
-#' @export
-#'
-
-getCitation <- function(object){
-
-  citation <- object@information$citation
-
-  if(!base::is.character(citation)){
-
-    warning("No citation found. Returning NULL.")
-
-    citation <- NULL
-
-  }
-
-  return(citation)
-
-}
-
-#' @rdname getCitation
-#' @export
-getCitationBySample <- function(sample_names = validSampleNames()){
-
-  confuns::check_one_of(
-    input = sample_names,
-    against = validSampleNames()
-  )
-
-  purrr::map(
-    .x = sample_names,
-    .f = function(sample){
-
-      dplyr::filter(sourceDataFrame(), sample == {{sample}}) %>%
-        dplyr::pull(citation) %>%
-        base::unique()
-
-    }
-  ) %>%
-    purrr::set_names(nm = sample_names)
-
-}
-
-
-
-
 #' @title Download spata objects
 #'
 #' @description Downloads a spata object and returns it. For convenient
@@ -302,7 +179,7 @@ downloadSpataObject <- function(sample_name,
 #' @title Download several spata objects
 #'
 #' @description Main function that downloads several spata objects
-#' at the same time and saves them as an .RDS file.
+#' at the same time and saves each as an .RDS file.
 #'
 #' @param sample_names Character vector. The sample names of the spata objects
 #' to be downloaded. Use \code{validSampleNames()} to obtain all valid input options.
