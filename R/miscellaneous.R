@@ -215,27 +215,38 @@ load_data_file <- function(directory){
 #' @title Plot the sample image
 plotSampleImage <- function(sample_name, which = "lowres"){
   
-  link_image <- 
-    sourceDataFrame(sample = sample_name) %>% 
-    dplyr::pull(var = "link_image")
-  
-  if(base::length(link_image) == 1 && !base::is.na(link_image)){
+  if(FALSE){
     
-    img <- 
-      base::tryCatch({
-        
-        magick::image_read(path = link_image)
-        
-      }, error = function(error){
-        
-        NULL
-        
-      })
+    link_image <- 
+      sourceDataFrame(sample = sample_name) %>% 
+      dplyr::pull(var = "link_image")
     
-    if(!base::is.null(img)){
+    # download image from path
+    if(base::length(link_image) == 1 && !base::is.na(link_image)){
       
-      grDevices::as.raster(img) %>% 
-      base::plot()
+      img <- 
+        base::tryCatch({
+          
+          magick::image_read(path = link_image)
+          
+        }, error = function(error){
+          
+          NULL
+          
+        })
+      
+      if(!base::is.null(img)){
+        
+        grDevices::as.raster(img) %>% 
+          base::plot()
+        
+      } else {
+        
+        magick::image_read(path = "https://grrrls.at/wp-content/uploads/2020/01/no-image.jpg") %>%
+          grDevices::as.raster() %>% 
+          base::plot()
+        
+      }
       
     } else {
       
@@ -245,13 +256,26 @@ plotSampleImage <- function(sample_name, which = "lowres"){
       
     }
     
-  } else {
+  } else { # get image from image list
     
-    magick::image_read(path = "https://grrrls.at/wp-content/uploads/2020/01/no-image.jpg") %>%
-      grDevices::as.raster() %>% 
-      base::plot()
+    img <- image_list[[sample_name]]
+    
+    if(base::is.null(img)){
+      
+      magick::image_read(path = "https://grrrls.at/wp-content/uploads/2020/01/no-image.jpg") %>%
+        grDevices::as.raster() %>% 
+        base::plot()
+      
+    } else {
+      
+      grDevices::as.raster(img) %>% 
+        base::plot()
+      
+    }
     
   }
+  
+
   
 }
 

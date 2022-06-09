@@ -43,7 +43,10 @@ launchSpataData()
 
 ```
 This function provides access to a shiny application in which all available samples 
-are listed and displayed - sorted by organ, pathology and additional meta data.
+are listed and displayed - sorted by organ, pathology and additional meta data. 
+
+Note: It can take some time (~ 1min) till all samples are displayed.
+As long as there is a red busy-indicator the app is working on it. 
 
 
 ## Downloading
