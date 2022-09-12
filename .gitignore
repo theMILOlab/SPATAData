@@ -2,7 +2,8 @@
 .Rhistory
 .RData
 .Ruserdata
-notes/
-notes/notes.R
+notes
 scripts
 data_private
+webApp
+images

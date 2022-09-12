@@ -30,19 +30,33 @@ library(SPATA2)
 If you want to get an overview of all available datasets and metadata:
 
 ```
-list.data()
+sourceDataFrame()
 
 ```
 
-If you want to obtain available sample names
+## Interactive downloads
+
+All samples can be downloaded and visualized interactively with: 
 
 ```
+launchSpataData()
 
+```
+This function provides access to a shiny application in which all available samples 
+are listed and displayed - sorted by organ, pathology and additional meta data. 
+
+Note: It can take some time (~ 1min) till all samples are displayed.
+As long as there is a red busy-indicator the app is working on it. 
+
+
+## Downloading
+
+To obtain valid input options for samples names: 
+
+```
 validSampleNames()
 
 ```
-
-## Downloading
 
 S4 spata objects can be downloaded via: 
 
@@ -55,24 +69,6 @@ object <- downloadSpataObject(sample_name = "275_T")
 # Downloads multiple spata objects at the same time  
 
 downloadSpataObjects(sample_names = c("275_T", "334_T"), folder = "objects")
-
-```
-
-Raw 10X Visium output can be downloaded via:
-
-```
-downloadRawData(sample_names = c("275_T", "334_T"), folder = "raw_data")
-
-```
-
-For project-specific downloads, a customized source file has to be added. 
-
-```
-source.csv <- ".../your/path/to/csv/source.csv"
-
-#update source file
-
-SPATAData::addSourceFile(source.csv)
 
 ```
 
