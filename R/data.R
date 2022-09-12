@@ -21,9 +21,9 @@
 #' @examples
 #'
 #' # Get the list()
-#' features <- data(features)[["275_T"]]
+#' features <- data(features_df)[["275_T"]]
 #' object <- SPATA2::addFeatures(object, features, overwrite = T)
 #'  
 #'
-"features"
+"features_df"
 
