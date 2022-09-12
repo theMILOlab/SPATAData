@@ -10,7 +10,7 @@ getCitation(object)
 getCitationBySample(sample_names = validSampleNames())
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{sample_names}{Character vector of sample names for which
 you want to obtain the correct citation.}

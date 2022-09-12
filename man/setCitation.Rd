@@ -7,7 +7,7 @@
 setCitation(object, citation)
 }
 \arguments{
-\item{object}{A valid spata-object.}
+\item{object}{An object of class \code{SPATA2}.}
 
 \item{citation}{Character value.}
 }
