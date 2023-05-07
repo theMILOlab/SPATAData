@@ -6,9 +6,6 @@
 \usage{
 addSourceFile(source.csv)
 }
-\value{
-
-}
 \description{
 AddSourceFile
 }

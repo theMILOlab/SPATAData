@@ -6,9 +6,6 @@
 \usage{
 loadData(sample_name, folder)
 }
-\value{
-
-}
 \description{
 list.data
 }

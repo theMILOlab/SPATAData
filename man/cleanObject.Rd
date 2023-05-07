@@ -6,9 +6,6 @@
 \usage{
 cleanObject(object)
 }
-\value{
-
-}
 \description{
 CleanObject
 }

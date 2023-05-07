@@ -9,9 +9,6 @@ getData(sample_name, folder = NULL, type = "SPATA")
 \arguments{
 \item{type}{Can be either 'SPATA' to download the Spata objects or 'RAW' for access the raw data}
 }
-\value{
-
-}
 \description{
 getData
 }

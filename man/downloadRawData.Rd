@@ -33,6 +33,8 @@ under which downloaded files are about to be saved already exist.}
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
+
+\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
 An invisible TRUE.

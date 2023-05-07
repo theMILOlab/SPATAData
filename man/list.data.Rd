@@ -6,9 +6,6 @@
 \usage{
 list.data()
 }
-\value{
-
-}
 \description{
 list.data
 }
