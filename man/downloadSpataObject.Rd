@@ -8,7 +8,7 @@ downloadSpataObject(
   sample_name,
   overwrite = FALSE,
   folder = base::getwd(),
-  file = stringr::str_c(sample_name, ".RDS"),
+  file = NULL,
   in_shiny = FALSE,
   verbose = TRUE,
   ...
@@ -25,8 +25,8 @@ under which downloaded files are about to be saved already exist.}
 folder in which the spata object is saved. Defaults to the working directory.}
 
 \item{file}{The filename of the spata object. Must end with \emph{'.RDS'}. By
-default the file is named like the sample name. Set to NULL if you don't
-want the object to be saved.}
+default the file it is `NULL` which makes the function skip the saving step.
+Set to character, if you want the object to be saved.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
@@ -49,12 +49,12 @@ it is returned by the function.
 \examples{
 
 # only download
-downloadSpataObject(sample_name = "275_T")
+downloadSpataObject(sample_name = "275_T", folder = getwd())
 
 # download AND assign
-object <- downloadSpataObject(sample_name = "275_T")
+object <- downloadSpataObject(sample_name = "275_T", folder = getwd())
 
-# only assign 
+# only assign (default)
 object <- downloadSpataObject(sample_name = "275_T", file = NULL)
 
 

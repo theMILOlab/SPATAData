@@ -14,8 +14,8 @@
 #' @param folder Character value. If character, specifies the output
 #' folder in which the spata object is saved. Defaults to the working directory.
 #' @param file The filename of the spata object. Must end with \emph{'.RDS'}. By
-#' default the file is named like the sample name. Set to NULL if you don't
-#' want the object to be saved.
+#' default the file it is `NULL` which makes the function skip the saving step.
+#' Set to character, if you want the object to be saved.
 #'
 #' @inherit SPATA2::argument_dummy params
 #'
@@ -28,19 +28,19 @@
 #' @examples
 #'
 #' # only download
-#' downloadSpataObject(sample_name = "275_T")
+#' downloadSpataObject(sample_name = "275_T", folder = getwd())
 #'
 #' # download AND assign
-#' object <- downloadSpataObject(sample_name = "275_T")
+#' object <- downloadSpataObject(sample_name = "275_T", folder = getwd())
 #' 
-#' # only assign 
+#' # only assign (default)
 #' object <- downloadSpataObject(sample_name = "275_T", file = NULL)
 #'
 #'
 downloadSpataObject <- function(sample_name,
                                 overwrite = FALSE,
                                 folder = base::getwd(),
-                                file = stringr::str_c(sample_name, ".RDS"),
+                                file = NULL,
                                 in_shiny = FALSE,
                                 verbose = TRUE,
                                 ...){
