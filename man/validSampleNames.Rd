@@ -6,17 +6,10 @@
 \usage{
 validSampleNames()
 }
-\arguments{
-\item{type}{Character value. If \emph{'SPATA'} returns valid input
-options when it comes to download spata objects. If \emph{'RAW'}
-returns valid input options when it comes to download 
-whole raw 10X Visium data sets.}
-}
 \value{
 Character vector.
 }
 \description{
 Returns the sample names of the samples that you can download
-via \code{downloadSpataObject()}, \code{downloadSpataObject()}, 
-\code{downloadRawData()}.
+via \code{downloadSpataObject()}, \code{downloadSpataObject(()}.
 }

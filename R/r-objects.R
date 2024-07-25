@@ -2,12 +2,25 @@
 
 
 
-# passwords ---------------------------------------------------------------
+all_variables <- c("sample", "patient_id", "age", "stage", "status",
+                   "organ", "anatomical_region", "pathology",
+                   "hist_classification", "hist_abbreviation", "tags",
+                   "organization", "who_grade", "species", 
+                   "link_spata", "link_raw", "link_image", "citation", "link_pub",
+                   "date_added", "assay_type")
 
 
+filter_sample_variables <- c("anatomical_region", "pathology", "hist_classification", "who_grade", 
+                             "organization", "assay_type", "tags")
 
 
-# variables for selectize input -------------------------------------------
+selectize_variables <- c("sample", "age", "patient_id",
+                         "organ", "anatomical_region", "pathology", 
+                         "hist_classification", "hist_abbreviation", 
+                         "organization", "who_grade", "species", "assay_type")
+
+
+text_variables <- c("link_spata", "link_raw", "link_image")
 
 variable_info <- list(
   age = c("The age of the patient (binned)."), 
@@ -36,22 +49,45 @@ variable_info <- list(
                 Must be provided in roman style with no empty space between number and suffix. E.g. IV, III, IIa")
 )
 
-all_variables <- c("sample", "patient_id", "age", "stage", "status",
-                   "organ", "anatomical_region", "pathology",
-                   "hist_classification", "hist_abbreviation", "tags",
-                   "organization", "who_grade", "species", 
-                   "link_spata", "link_raw", "link_image", "citation", "link_pub",
-                   "date_added", "assay_type")
-
-selectize_variables <- c("sample", "age", "patient_id",
-                         "organ", "anatomical_region", "pathology", 
-                         "hist_classification", "hist_abbreviation", 
-                         "organization", "who_grade", "species", "assay_type")
-
-text_variables <- c("link_spata", "link_raw", "link_image")
 
 
-filter_sample_variables <- c("anatomical_region", "pathology", "hist_classification", "who_grade", 
-                             "organization", "assay_type", "tags")
 
-
+#' @export
+source_df_v3_blueprint <- 
+  tibble(
+    sample_name = as.character(NA),
+    ##############################
+    comment = as.character(NA),
+    donor_id = as.character(NA),
+    donor_species = as.character(NA),
+    grade = as.character(NA),
+    grade_sub = as.character(NA),
+    histo_class = as.character(NA),
+    histo_class_sub = as.character(NA),
+    institution = as.character(NA),
+    lm_source = Sys.time(),
+    organ = as.character(NA),
+    organ_part = as.character(NA),
+    organ_side = as.character(NA), 
+    pathology = as.character(NA),
+    platform = as.character(NA),
+    pub_citation = as.character(NA),
+    pub_doi = as.character(NA),
+    pub_journal = as.character(NA), 
+    pub_year = as.numeric(NA),
+    sex = as.character(NA),
+    source = as.character(NA),
+    tags = as.character(NA),
+    tissue_age = as.numeric(NA), 
+    web_link = as.character(NA),
+    workgroup = as.character(NA), 
+    #############################
+    mean_counts = as.numeric(NA),
+    median_counts = as.numeric(NA),
+    modality_gene = as.logical(NA), 
+    modality_metabolite = as.logical(NA),
+    modality_protein = as.logical(NA),
+    n_obs = as.numeric(NA), 
+    n_tissue_sections = as.numeric(NA), 
+    obs_unit = as.character(NA)
+  )

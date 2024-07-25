@@ -15,21 +15,21 @@ adjustSampleManually(
 \item{source_df}{The source data.frame. Defaults to the current \code{source_df}
 of the package.}
 
-\item{sample_name}{Character value. The sample that is supposed to 
+\item{sample_name}{Character value. The sample that is supposed to
 be adjusted.}
 
-\item{adjust_sample_input}{A named list. Each slot 
+\item{adjust_sample_input}{A named list. Each slot
 corresponds to the variable of \code{source_df} that is supposed
 to be adjusted.}
 
-\item{update}{Logical. Use with caution! If TRUE, the updated output data.frame 
+\item{update}{Logical. Use with caution! If TRUE, the updated output data.frame
 will replace the current \code{source_df} of the package!}
 }
 \value{
 The updated data.frame is returned invisibly.
 }
 \description{
-Instead of adding a new sample the samples info can be 
+Instead of adding a new sample the samples info can be
 manually adjusted using this function.
 }
 \examples{
@@ -44,3 +44,4 @@ manually adjusted using this function.
     )
 
 }
+\keyword{internal}

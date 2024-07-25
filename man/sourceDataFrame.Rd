@@ -2,19 +2,46 @@
 % Please edit documentation in R/miscellaneous.R
 \name{sourceDataFrame}
 \alias{sourceDataFrame}
-\title{Obtain the SPATAData \code{source_df}}
+\title{Obtain the SPATAData source data.frame}
 \usage{
-sourceDataFrame(organ = NULL, status = NULL, sample = NULL)
-}
-\arguments{
-\item{organ}{Character value. Filter for organs.}
-
-\item{status}{Character value. Filter for tissue status. \emph{'p'} equals
-pathological. \emph{'h'} equals healthy.}
+sourceDataFrame()
 }
 \value{
 Data.frame.
 }
 \description{
-Returns the \code{source_df} and allows some filtering.
+Returns the \link[=source_df]{source data.frame}.
+}
+\examples{
+
+library(SPATA2)
+library(SPATAData)
+library(dplyr)
+library(stringr)
+
+sdf <- sourceDataFrame()
+
+#----- example dplyr logic to filter the source data.frame
+
+# 1. obtain glioblastoma samples from the temporal lobe
+
+sdf_gbm <- filter(sdf, histo_class == "Glioblastoma" & organ_part == "temporal")
+
+gbm_samples <- sdf_gbm$sample_name
+
+print(gbm_samples)
+
+# downlaod as collection
+downloadSpataObjects(sample_names = gbm_samples, folder = "spata_objects/gbm") 
+
+# 2. obtain data from specific publications
+
+sdf_kuppe <- 
+ filter(sdf, str_detect(pub_citation, pattern = "^Kuppe") & pub_journal == "Nature")
+ 
+kuppe_samples <- sdf_kuppe$sample_name
+
+print(kuppe_samples)
+
+
 }

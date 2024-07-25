@@ -2,50 +2,49 @@
 
 
 
-#' @title Download spata objects
+#' @title Download objects of class `SPATA2`
 #'
-#' @description Downloads a spata object and returns it. For convenient
-#' downloads of multiple spata objects check out \code{downloadSpataObjects()}. 
+#' @description Downloads a `SPATA2` object and returns it. For convenient
+#' downloads of multiple `SPATA2` objects check out \code{downloadSpataObjects()}. 
 #'
 #' @param sample_name Character value. The name of the sample you want to
 #' download. Use \code{validSampleNames()} to obtain all valid input options.
+#' @param file The filename of the `SPATA2` object. Must end with \emph{'.RDS'}. By
+#' default the file it is `NULL` which makes the function save the object 
+#' under the sample name with an *'.RDS'* suffix. If `FALSE`, the saving 
+#' is skipped and the object is simply returned.
+#' @param folder Character value. If character, specifies the output
+#' folder in which the `SPATA2` object is saved. Defaults to the working directory.
 #' @param overwrite Logical. Must be set to TRUE if file directories
 #' under which downloaded files are about to be saved already exist.
-#' @param folder Character value. If character, specifies the output
-#' folder in which the spata object is saved. Defaults to the working directory.
-#' @param file The filename of the spata object. Must end with \emph{'.RDS'}. By
-#' default the file it is `NULL` which makes the function skip the saving step.
-#' Set to character, if you want the object to be saved.
 #'
 #' @inherit SPATA2::argument_dummy params
 #'
-#' @details The downloaded spata object is immediately saved after the download before
-#' it is returned by the function.
+#' @details If `file` is not `FALSE`. The downloaded `SPATA2` object is immediately saved after the download before
+#' it is returned by the function. Note that the file directory is assembled by combining
+#' `folder` and `file`!
 #'
-#' @return The downloaded spata object.
+#' @return The downloaded `SPATA2` object.
 #' @export
 #'
 #' @examples
 #'
-#' # only download
-#' downloadSpataObject(sample_name = "275_T", folder = getwd())
+#' # download & assign (no saving on the disk)
+#' object <- downloadSpataObject(sample_name = "UKF275T")
 #'
-#' # download AND assign
-#' object <- downloadSpataObject(sample_name = "275_T", folder = getwd())
+#' # download, assign and save on disk
+#' # -> stores the file under ~/UKF275T.RDS (where '~' is your working directory)
+#' object <- downloadSpataObject(sample_name = "UKF275T", file = TRUE)
 #' 
-#' # only assign (default)
-#' object <- downloadSpataObject(sample_name = "275_T", file = NULL)
-#'
+#' # download, assign and save on disk in a specified directory
+#' object <- downloadSpataObject(sample_name = "UKF275T", file = "my/path/spata_object.RDS")
 #'
 downloadSpataObject <- function(sample_name,
                                 overwrite = FALSE,
-                                folder = base::getwd(),
-                                file = NULL,
+                                file = FALSE,
                                 in_shiny = FALSE,
                                 verbose = TRUE,
                                 ...){
-
-  confuns::are_values(c("folder", "file"), mode = "character", skip.allow = TRUE, skip.val = NULL)
 
   confuns::is_value(x = overwrite, mode = "logical")
 
@@ -59,17 +58,19 @@ downloadSpataObject <- function(sample_name,
 
   confuns::check_one_of(
     input = sample_name,
-    against = base::unique(source_df$sample)
+    against = base::unique(source_df$sample_name), 
+    fdb.opt = 2, 
+    ref.opt.2 = "SPATAData sample names"
   )
 
   download_dir <-
-    dplyr::filter(source_df, sample == {{sample_name}}) %>%
-    dplyr::pull(link_spata)
+    dplyr::filter(source_df, sample_name == {{sample_name}}) %>%
+    dplyr::pull(web_link)
   
   if(!shiny::isTruthy(download_dir)){
     
     confuns::give_feedback(
-      msg = glue::glue("Could not find valid link to spata object for sample {sample_name}."), 
+      msg = glue::glue("Could not find valid link to `SPATA2` object for sample {sample_name}."), 
       fdb.fn = "stop", 
       in.shiny = in_shiny
     )
@@ -84,7 +85,7 @@ downloadSpataObject <- function(sample_name,
 
     }
 
-    directory_spata <- stringr::str_c(folder, "/", file)
+    directory_spata <- file
 
     if(base::file.exists(directory_spata)){
 
@@ -126,7 +127,7 @@ downloadSpataObject <- function(sample_name,
   }
 
   confuns::give_feedback(
-    msg = glue::glue("Downloading spata object '{sample_name}' from '{download_dir}'."),
+    msg = glue::glue("Downloading `SPATA2` object '{sample_name}' from '{download_dir}'."),
     verbose = verbose, 
     in.shiny = in_shiny
     )
@@ -146,24 +147,12 @@ downloadSpataObject <- function(sample_name,
     
   }
 
-  citation <-
-    dplyr::filter(source_df, sample == {{sample_name}}) %>%
-    dplyr::pull(citation) %>%
-    base::unique()
-
-  downloaded_object <- setCitation(downloaded_object, citation = citation)
-
   if(base::is.character(file)){
 
-    downloaded_object <-
-      SPATA2::adjustDirectoryInstructions(
-        object = downloaded_object,
-        to = "spata_object",
-        directory_new = directory_spata
-      )
+    downloaded_object <- SPATA2::setSpataDir(downloaded_object, dir = file)
 
     confuns::give_feedback(
-      msg = glue::glue("Saving spata object under '{directory_spata}'."),
+      msg = glue::glue("Saving `SPATA2` object under '{directory_spata}'."),
       verbose = verbose
     )
 
@@ -176,31 +165,31 @@ downloadSpataObject <- function(sample_name,
 }
 
 
-#' @title Download several spata objects
+#' @title Download several `SPATA2` objects
 #'
-#' @description Main function that downloads several spata objects
+#' @description Main function that downloads several `SPATA2` objects
 #' at the same time and saves each as an .RDS file.
 #'
-#' @param sample_names Character vector. The sample names of the spata objects
+#' @param sample_names Character vector. The sample names of the `SPATA2` objects
 #' to be downloaded. Use \code{validSampleNames()} to obtain all valid input options.
 #' @param files Character vector or NULL. Specifies the file names under which the
-#' spata objects are saved. If character, the input must be of the same length
+#' `SPATA2` objects are saved. If character, the input must be of the same length
 #' as the input for argument \code{sample_names}. If NULL, the files are named
 #' according to the sample name.
 #' @inherit downloadSpataObject params
 #'
-#' @return An invisible TRUE if everything worked flawlessly. 
+#' @return An invisible `TRUE`.
 #'
 #' @export
 #'
 #' @examples
 #'
-#' # downloads three spata objects and
-#' # stores them as "spata_data/275_T.RDS", "spata_data/313_T.RDS" etc.
+#' # downloads three objects and
+#' # stores them as "spata_data/UKF275T.RDS", "spata_data/UKF313t.RDS", ... etc.
 #' 
 #'   downloadSpataObjects(
-#'     sample_names = ("275_T", "313_T", "334_T"),
-#'     folder = "spata_data"
+#'     sample_names = c("UKF275T", "UKF313T", "UKF334T"),
+#'     folder = "spata_objects"
 #'    )
 #'
 downloadSpataObjects <- function(sample_names,
@@ -233,7 +222,7 @@ downloadSpataObjects <- function(sample_names,
 
   confuns::check_one_of(
     input = sample_names,
-    against = base::unique(source_df$sample)
+    against = base::unique(source_df$sample_name)
   )
   
   if(!base::dir.exists(folder)){
@@ -295,18 +284,14 @@ downloadSpataObjects <- function(sample_names,
       .x = sample_names,
       .y = files,
       .f = purrr::safely(
-        .f = function(sample, file){
+        .f = function(sample_name, file){
 
           download_dir <-
-            dplyr::filter(source_df, sample == {{sample}}) %>%
-            dplyr::pull(link_spata)
-
-          citation <-
-            dplyr::filter(source_df, sample == {{sample}}) %>%
-            dplyr::pull(citation) 
+            dplyr::filter(source_df, sample_name == {{sample_name}}) %>%
+            dplyr::pull(web_link)
 
           confuns::give_feedback(
-            msg = glue::glue("Downloading sample {sample} from '{download_dir}'."),
+            msg = glue::glue("Downloading sample {sample_name} from '{download_dir}'."),
             verbose = verbose,
             in.shiny = in_shiny
             )
@@ -323,8 +308,7 @@ downloadSpataObjects <- function(sample_names,
               .
 
             }} %>%
-            setCitation(object = ., citation = citation) %>%
-            saveSpataObject(directory_spata = file, verbose = verbose)
+            saveSpataObject(object = ., dir = file, verbose = verbose)
 
           return(TRUE)
 
@@ -378,7 +362,7 @@ downloadSpataObjects <- function(sample_names,
 #' the data you have to unzip the folder manually.
 #'
 #' @return An invisible TRUE.
-#' @export
+#' @keywords internal
 #'
 downloadRawData <- function(sample_names,
                             files = NULL,

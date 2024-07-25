@@ -5,18 +5,22 @@
 \alias{getCitationBySample}
 \title{Obtain citation info}
 \usage{
-getCitation(object)
+getCitation(object, write_lines = TRUE)
 
-getCitationBySample(sample_names = validSampleNames())
+getCitationBySample(sample_names)
 }
 \arguments{
-\item{object}{An object of class \code{SPATA2}.}
+\item{object}{An object of class \code{\link[SPATA2]{SPATA2}} or, in case of S4 generics,
+objects of classes for which a method has been defined.}
+
+\item{write_lines}{Logical. If \code{TRUE}, the string is printed in the
+console via \code{writeLines()}.}
 
 \item{sample_names}{Character vector of sample names for which
 you want to obtain the correct citation.}
 }
 \value{
-Citation in form of character vectors or a list of such.
+Citation and - if one of SPATAData objects - the download source.
 }
 \description{
 If you have used a downloadable spata object

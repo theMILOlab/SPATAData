@@ -11,6 +11,8 @@
 #' @param tags Character vector of tags.
 #' @inherit addSampleManually params return
 #' 
+#' @keywords internal
+#' 
 addSampleTagsManually <- function(source_df = sourceDataFrame(), 
                                   sample_name, 
                                   tags,
@@ -71,6 +73,8 @@ addSampleTagsManually <- function(source_df = sourceDataFrame(),
 #' to be adjusted. 
 #' @inherit addSampleManually params return
 #' 
+#' @keywords internal
+#' 
 #' @examples 
 #' 
 #'  # adjust image link
@@ -120,7 +124,7 @@ adjustSampleManually <- function(source_df = sourceDataFrame(),
   
 }
 
-
+#' @keywords internal
 adjustSourceDataFrame <- function(source_df = sourceDataFrame()){
   
   dplyr::mutate(
@@ -136,6 +140,7 @@ adjustSourceDataFrame <- function(source_df = sourceDataFrame()){
 
 # c -----------------------------------------------------------------------
 
+#' @keywords internal
 checkSourceDataFrame <- function(source_df = sourceDataFrame(), ...){
   
   chr_vars <- c(selectize_variables, text_variables, "tags")
@@ -174,50 +179,97 @@ checkSourceDataFrame <- function(source_df = sourceDataFrame(), ...){
 #' made this data available
 #'
 #' @inherit SPATA2::argument_dummy params
+#' @param write_lines Logical. If `TRUE`, the string is printed in the
+#' console via `writeLines()`.
 #' @param sample_names Character vector of sample names for which
 #' you want to obtain the correct citation.
 #'
-#' @return Citation in form of character vectors or a list of such.
+#' @return Citation and - if one of SPATAData objects - the download source.
 #'
 #' @export
 #'
 
-getCitation <- function(object){
+getCitation <- function(object, write_lines = TRUE){
   
-  citation <- object@information$citation
+  sample_name <- getSampleName(object)
+  citation <- object@meta_sample$pub_citation
   
   if(!base::is.character(citation)){
     
-    warning("No citation found. Returning NULL.")
+    warning("No valid citation found. Returning NULL.")
     
     citation <- NULL
     
+    return(citation)
+    
+  } else {
+    
+    citation <- stringr::str_c("Citation: ", citation)
+    
   }
   
-  return(citation)
+  if(sample_name %in% source_df$sample_name){
+    
+    source <- 
+      dplyr::filter(source_df, sample_name == {{sample_name}}) %>% 
+      dplyr::pull(source) %>% 
+      stringr::str_replace_all(pattern = "_", replacement = " ") %>% 
+      stringr::str_c("\nSource: ", .)
+    
+    citation <- stringr::str_c(citation, source)
+    
+  }
+  
+  if(base::isTRUE(write_lines)){
+    
+    writeLines(citation)
+    
+  } else {
+    
+    return(citation)
+    
+  }
   
 }
 
 #' @rdname getCitation
 #' @export
-getCitationBySample <- function(sample_names = validSampleNames()){
+getCitationBySample <- function(sample_names){
   
   confuns::check_one_of(
     input = sample_names,
     against = validSampleNames()
   )
   
-  purrr::map(
+  purrr::walk(
     .x = sample_names,
-    .f = function(sample){
+    .f = function(sample_name){
       
-      dplyr::filter(sourceDataFrame(), sample == {{sample}}) %>%
-        dplyr::pull(citation) %>%
-        base::unique()
+      citation <- 
+        dplyr::filter(source_df, sample_name == {{sample_name}}) %>% 
+        dplyr::pull(pub_citation)
       
-    }
-  ) %>%
-    purrr::set_names(nm = sample_names)
+      citation <- stringr::str_c("\nCitation: ", citation)
+      
+      citation <- stringr::str_c("Sample: ", sample_name, citation)
+      
+      source <- 
+        dplyr::filter(source_df, sample_name == {{sample_name}}) %>% 
+        dplyr::pull("source") %>% 
+        stringr::str_replace_all(pattern = "_", replacement = " ") %>% 
+        stringr::str_c("\nSource: ", .)
+      
+      citation <- stringr::str_c(citation, source)
+      
+      if(length(sample_names) > 1){
+        
+        citation <- stringr::str_c(citation, "\n-------------------------")
+        
+      }
+      
+      writeLines(citation)
+      
+  }) 
   
 }
 
@@ -225,6 +277,7 @@ getCitationBySample <- function(sample_names = validSampleNames()){
 
 # i -----------------------------------------------------------------------
 
+#' @keywords internal
 is_creatable <- function(file){
   
   base::tryCatch({
@@ -248,7 +301,7 @@ is_creatable <- function(file){
 
 # p -----------------------------------------------------------------------
 
-
+#' @keywords internal
 plotSampleImage <- function(sample_name, which = "lowres"){
   
   if(FALSE){
@@ -322,7 +375,7 @@ plotSampleImage <- function(sample_name, which = "lowres"){
 
 
 
-
+#' @keywords internal
 load_data_file <- function(directory){
   
   if(stringr::str_detect(string = directory, pattern = ".csv$")){
@@ -377,39 +430,47 @@ load_data_file <- function(directory){
 
 
 
-#' @title Obtain the SPATAData \code{source_df}
+#' @title Obtain the SPATAData source data.frame
 #' 
-#' @description Returns the \code{source_df} and allows some filtering.
-#'
-#' @param organ Character value. Filter for organs.
-#' @param status Character value. Filter for tissue status. \emph{'p'} equals
-#' pathological. \emph{'h'} equals healthy. 
+#' @description Returns the \link[=source_df]{source data.frame}.
+#' 
+#' @examples
+#' 
+#' library(SPATA2)
+#' library(SPATAData)
+#' library(dplyr)
+#' library(stringr)
+#' 
+#' sdf <- sourceDataFrame()
+#' 
+#' #----- example dplyr logic to filter the source data.frame
+#' 
+#' # 1. obtain glioblastoma samples from the temporal lobe
+#' 
+#' sdf_gbm <- filter(sdf, histo_class == "Glioblastoma" & organ_part == "temporal")
+#' 
+#' gbm_samples <- sdf_gbm$sample_name
+#' 
+#' print(gbm_samples)
+#' 
+#' # downlaod as collection
+#' downloadSpataObjects(sample_names = gbm_samples, folder = "spata_objects/gbm") 
+#' 
+#' # 2. obtain data from specific publications
+#' 
+#' sdf_kuppe <- 
+#'  filter(sdf, str_detect(pub_citation, pattern = "^Kuppe") & pub_journal == "Nature")
+#'  
+#' kuppe_samples <- sdf_kuppe$sample_name
+#' 
+#' print(kuppe_samples)
+#' 
 #'
 #' @return Data.frame.
 #'
-sourceDataFrame <- function(organ = NULL, status = NULL, sample = NULL){
+sourceDataFrame <- function(){
   
-  df <- SPATAData::source_df
-  
-  if(base::is.character(organ)){
-    
-    df <- dplyr::filter(df, organ %in% {{organ}})
-    
-  }
-  
-  if(base::is.character(status)){
-    
-    df <- dplyr::filter(df, status %in% {{status}})
-    
-  }
-  
-  if(base::is.character(sample)){
-    
-    df <- dplyr::filter(df, sample %in% {{sample}})
-    
-  }
-  
-  return(df)
+  source_df
   
 }
 
@@ -436,7 +497,7 @@ sourceDataFrameTags <- function(source_df = sourceDataFrame(), sample_name = NUL
     
   }
   
-  stringr::str_split(source_df$tags, pattern = "\\|") %>% 
+  stringr::str_split(source_df$tags, pattern = "\\;") %>% 
     purrr::flatten_chr() %>% 
     base::unique()
   
@@ -469,6 +530,7 @@ sampleTags <- function(source_df = sourceDataFrame(), sample_name){
 }
 
 
+#' @keywords internal
 filterSamples <- function(source_df = sourceDataFrame(), input, organ, status, all){
   
   test <- base::ifelse(test = base::isTRUE(all), yes = "all", no = "any")
@@ -625,7 +687,7 @@ setCitation <- function(object, citation){
 }
 
 
-
+#' @keywords internal
 #' @export
 str_extract_before <- function(string,
                                pattern,
@@ -656,6 +718,7 @@ str_extract_before <- function(string,
   
 }
 
+#' @keywords internal
 #' @export
 str_extract_after <- function(string,
                               pattern,
@@ -694,21 +757,14 @@ str_extract_after <- function(string,
 #' @title Valid sample names
 #'
 #' @description Returns the sample names of the samples that you can download
-#' via \code{downloadSpataObject()}, \code{downloadSpataObject()}, 
-#' \code{downloadRawData()}.
-#' 
-#' @param type Character value. If \emph{'SPATA'} returns valid input
-#' options when it comes to download spata objects. If \emph{'RAW'}
-#' returns valid input options when it comes to download 
-#' whole raw 10X Visium data sets.
+#' via \code{downloadSpataObject()}, \code{downloadSpataObject(()}.
 #'
 #' @return Character vector.
 #' @export
 #'
 validSampleNames <- function(){
   
-  dplyr::pull(SPATAData::source_df, sample) %>% 
-    base::unique()
+  sourceDataFrame()$sample_name
   
 }
 

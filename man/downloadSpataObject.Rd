@@ -2,13 +2,12 @@
 % Please edit documentation in R/download.R
 \name{downloadSpataObject}
 \alias{downloadSpataObject}
-\title{Download spata objects}
+\title{Download objects of class \code{SPATA2}}
 \usage{
 downloadSpataObject(
   sample_name,
   overwrite = FALSE,
-  folder = base::getwd(),
-  file = NULL,
+  file = FALSE,
   in_shiny = FALSE,
   verbose = TRUE,
   ...
@@ -21,12 +20,10 @@ download. Use \code{validSampleNames()} to obtain all valid input options.}
 \item{overwrite}{Logical. Must be set to TRUE if file directories
 under which downloaded files are about to be saved already exist.}
 
-\item{folder}{Character value. If character, specifies the output
-folder in which the spata object is saved. Defaults to the working directory.}
-
-\item{file}{The filename of the spata object. Must end with \emph{'.RDS'}. By
-default the file it is `NULL` which makes the function skip the saving step.
-Set to character, if you want the object to be saved.}
+\item{file}{The filename of the \code{SPATA2} object. Must end with \emph{'.RDS'}. By
+default the file it is \code{NULL} which makes the function save the object
+under the sample name with an \emph{'.RDS'} suffix. If \code{FALSE}, the saving
+is skipped and the object is simply returned.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
@@ -34,28 +31,32 @@ the computational progress will be printed.
 (Warning messages will always be printed.)}
 
 \item{...}{Used to absorb deprecated arguments or functions.}
+
+\item{folder}{Character value. If character, specifies the output
+folder in which the \code{SPATA2} object is saved. Defaults to the working directory.}
 }
 \value{
-The downloaded spata object.
+The downloaded \code{SPATA2} object.
 }
 \description{
-Downloads a spata object and returns it. For convenient
-downloads of multiple spata objects check out \code{downloadSpataObjects()}.
+Downloads a \code{SPATA2} object and returns it. For convenient
+downloads of multiple \code{SPATA2} objects check out \code{downloadSpataObjects()}.
 }
 \details{
-The downloaded spata object is immediately saved after the download before
-it is returned by the function.
+If \code{file} is not \code{FALSE}. The downloaded \code{SPATA2} object is immediately saved after the download before
+it is returned by the function. Note that the file directory is assembled by combining
+\code{folder} and \code{file}!
 }
 \examples{
 
-# only download
-downloadSpataObject(sample_name = "275_T", folder = getwd())
+# download & assign (no saving on the disk)
+object <- downloadSpataObject(sample_name = "UKF275T")
 
-# download AND assign
-object <- downloadSpataObject(sample_name = "275_T", folder = getwd())
+# download, assign and save on disk
+# -> stores the file under ~/UKF275T.RDS (where '~' is your working directory)
+object <- downloadSpataObject(sample_name = "UKF275T", file = TRUE)
 
-# only assign (default)
-object <- downloadSpataObject(sample_name = "275_T", file = NULL)
-
+# download, assign and save on disk in a specified directory
+object <- downloadSpataObject(sample_name = "UKF275T", file = "my/path/spata_object.RDS")
 
 }

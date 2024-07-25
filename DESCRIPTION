@@ -4,10 +4,11 @@ Version: 0.0.0.9000
 Authors@R: 
     as.person(c(
     "Dieter-Henrik Heiland <dr.dieter.henrik.heiland@uniklinik-freiburg.de> [aut]",
-    "Jan Kueckelhaus <jan.kueckelhaus@uniklinik-freiburg.de> [aut, cre]" 
+    "Jan Kueckelhaus <jankueckelhaus@uk-erlangen.de> [aut, cre]" 
   ))
-Description: A package designed for convenient distribution of spatial transcriptomic data sets in form of S4 objects for the SPATA framework or in form of raw data (10X Visium output).
-RoxygenNote: 7.2.0
+Description: A package designed for convenient distribution of spatial transcriptomic data sets in form of S4 objects for the SPATA2 framework.
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
 Encoding: UTF-8
 LazyData: true
 License: GPL-3

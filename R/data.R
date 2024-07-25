@@ -1,29 +1,46 @@
 
 
 
-#' @title Meta data and links for MILO Lab database
+#' SPATAData source data.frame
 #'
-#' @description A data.frame of multiple variables containing information 
-#' around the data sets that are available in \code{SPATAData}.
+#' This data frame, `source_df`, contains information about various spatial transcriptomic experiments.
 #'
+#' @format A data frame with the following columns:
+#' \itemize{
+#'   \item{sample_id}{: Character. Unique identifier for each sample.}
+#'   \item{sample_name}{: Character. Name of the sample.}
+#'   \item{comment}{: Character. Additional comments about the sample.}
+#'   \item{donor_id}{: Character. Unique identifier for the donor.}
+#'   \item{donor_species}{: Character. Species of the donor.}
+#'   \item{grade}{: Character. Grade of the sample.}
+#'   \item{grade_sub}{: Character. Sub-grade of the sample.}
+#'   \item{histo_class}{: Character. Histological classification.}
+#'   \item{histo_class_sub}{: Character. Sub-classification of the histological class.}
+#'   \item{institution}{: Character. Institution where the sample was collected.}
+#'   \item{lm_source}{: Date-time. Last instance when the row of the source data.frame was modified.}
+#'   \item{organ}{: Character. Organ from which the sample was taken.}
+#'   \item{organ_part}{: Character. Specific part of the organ from which the sample was taken.}
+#'   \item{pathology}{: Character. Pathological state of the sample.}
+#'   \item{platform}{: Character. Platform used for the experiment.}
+#'   \item{pub_citation}{: Character. Citation for the publication related to the sample.}
+#'   \item{pub_doi}{: Character. DOI of the publication related to the sample.}
+#'   \item{pub_journal}{: Character. Journal where the related publication was published.}
+#'   \item{pub_year}{: Numeric. Year of publication.}
+#'   \item{sex}{: Character. Sex of the donor.}
+#'   \item{side}{: Character. Side of the organ from which the sample was taken.}
+#'   \item{tags}{: Character. Tags related to the sample.}
+#'   \item{tissue_age}{: Numeric. Age of the tissue in years.}
+#'   \item{web_link}{: Character. Link to an object or additional data related to the sample for downloads.}
+#'   \item{workgroup}{: Character. Workgroup or team responsible for the sample.}
+#'   \item{mean_counts}{: Numeric. Mean counts of the measurements.}
+#'   \item{median_counts}{: Numeric. Median counts of the measurements.}
+#'   \item{modality_gene}{: Logical. Indicates if the modality includes genes.}
+#'   \item{modality_metabolite}{: Logical. Indicates if the modality includes metabolites.}
+#'   \item{modality_protein}{: Logical. Indicates if the modality includes proteins.}
+#'   \item{n_obs}{: Numeric. Number of observations.}
+#'   \item{n_tissue_sections}{: Numeric. Number of tissue sections.}
+#'   \item{obs_unit}{: Character. Unit of observation.}
+#' }
 "source_df"
 
-#' @title Meta data of features and cell type deconvolution 
-#'
-#' @description A list of data.frames named by samples of the samples available. 
-#' The cell type annotations were performed by spaceXR 
-#' Cable, D.M., Murray, E., Shanmugam, V. et al. 
-#' Cell type-specific inference of differential expression in 
-#' spatial transcriptomics. Nat Methods (2022). 
-#' https://doi.org/10.1038/s41592-022-01575-3 
-#' using the reference scRNA-seq dataset from Cristian Ruiz-Moreno 
-#' "https://www.biorxiv.org/content/10.1101/2022.08.27.505439v1" (not published)
-#' @examples
-#'
-#' # Get the list()
-#' load(features_list)
-#' object <- SPATA2::addFeatures(object, features[["275_T]], overwrite = T)
-#'  
-#'
-"features_list"
 

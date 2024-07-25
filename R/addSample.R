@@ -3,6 +3,8 @@
 #' @description Adds a new sample to the source data.frame. 
 #'
 #' @inherit addSampleManually params return
+#' 
+#' @keywords internal
 #'
 addSample <- function(source_df = sourceDataFrame(), update){
   

@@ -9,3 +9,4 @@ launchSpataData()
 \description{
 Interactive SPATAData
 }
+\keyword{internal}

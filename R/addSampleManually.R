@@ -21,6 +21,7 @@
 #' these are always character values. 
 #'
 #' @return The updated data.frame is returned invisibly.
+#' @keywords internal
 
 addSampleManually <- function(source_df = sourceDataFrame(),
                               new_sample_input,
@@ -79,6 +80,7 @@ addSampleManually <- function(source_df = sourceDataFrame(),
 #' @inherit addSampleManually params return
 #' 
 #' @details As a precaution \code{udpate} must be manually set to TRUE. 
+#' @keywords internal
 #'
 
 removeSampleManually <- function(sample_name, update){

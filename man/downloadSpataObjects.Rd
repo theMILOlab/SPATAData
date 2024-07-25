@@ -2,7 +2,7 @@
 % Please edit documentation in R/download.R
 \name{downloadSpataObjects}
 \alias{downloadSpataObjects}
-\title{Download several spata objects}
+\title{Download several \code{SPATA2} objects}
 \usage{
 downloadSpataObjects(
   sample_names,
@@ -15,16 +15,16 @@ downloadSpataObjects(
 )
 }
 \arguments{
-\item{sample_names}{Character vector. The sample names of the spata objects
+\item{sample_names}{Character vector. The sample names of the \code{SPATA2} objects
 to be downloaded. Use \code{validSampleNames()} to obtain all valid input options.}
 
 \item{files}{Character vector or NULL. Specifies the file names under which the
-spata objects are saved. If character, the input must be of the same length
+\code{SPATA2} objects are saved. If character, the input must be of the same length
 as the input for argument \code{sample_names}. If NULL, the files are named
 according to the sample name.}
 
 \item{folder}{Character value. If character, specifies the output
-folder in which the spata object is saved. Defaults to the working directory.}
+folder in which the \code{SPATA2} object is saved. Defaults to the working directory.}
 
 \item{overwrite}{Logical. Must be set to TRUE if file directories
 under which downloaded files are about to be saved already exist.}
@@ -37,20 +37,20 @@ the computational progress will be printed.
 \item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
-An invisible TRUE if everything worked flawlessly.
+An invisible \code{TRUE}.
 }
 \description{
-Main function that downloads several spata objects
+Main function that downloads several \code{SPATA2} objects
 at the same time and saves each as an .RDS file.
 }
 \examples{
 
-# downloads three spata objects and
-# stores them as "spata_data/275_T.RDS", "spata_data/313_T.RDS" etc.
+# downloads three objects and
+# stores them as "spata_data/UKF275T.RDS", "spata_data/UKF313t.RDS", ... etc.
 
   downloadSpataObjects(
-    sample_names = ("275_T", "313_T", "334_T"),
-    folder = "spata_data"
+    sample_names = c("UKF275T", "UKF313T", "UKF334T"),
+    folder = "spata_objects"
    )
 
 }
