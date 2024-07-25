@@ -17,11 +17,12 @@ downloadSpataObject(
 \item{sample_name}{Character value. The name of the sample you want to
 download. Use \code{validSampleNames()} to obtain all valid input options.}
 
-\item{overwrite}{Logical. Must be set to TRUE if file directories
-under which downloaded files are about to be saved already exist.}
+\item{overwrite}{Logical. Must be set to \code{TRUE} if file directories
+under which downloaded files are to be saved already exist.}
 
-\item{file}{The filename of the \code{SPATA2} object. Must end with \emph{'.RDS'}. By
-default the file it is \code{NULL} which makes the function save the object
+\item{file}{If you want to save the object on disc:
+The filename of the \code{SPATA2} object. Must end with \emph{'.RDS'} if provided
+as a character. If \code{NULL}, the function saves the object
 under the sample name with an \emph{'.RDS'} suffix. If \code{FALSE}, the saving
 is skipped and the object is simply returned.}
 

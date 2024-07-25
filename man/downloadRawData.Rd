@@ -26,8 +26,8 @@ according to the sample name.}
 \item{folder}{Character value. If character, specifies the output
 folder in which the \code{SPATA2} object is saved. Defaults to the working directory.}
 
-\item{overwrite}{Logical. Must be set to TRUE if file directories
-under which downloaded files are about to be saved already exist.}
+\item{overwrite}{Logical. Must be set to \code{TRUE} if file directories
+under which downloaded files are to be saved already exist.}
 }
 \value{
 An invisible TRUE.

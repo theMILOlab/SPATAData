@@ -9,16 +9,15 @@
 #'
 #' @param sample_name Character value. The name of the sample you want to
 #' download. Use \code{validSampleNames()} to obtain all valid input options.
-#' @param file The filename of the `SPATA2` object. Must end with \emph{'.RDS'}. By
-#' default the file it is `NULL` which makes the function save the object 
+#' @param file If you want to save the object on disc:
+#' The filename of the `SPATA2` object. Must end with \emph{'.RDS'} if provided
+#' as a character. If `NULL`, the function saves the object 
 #' under the sample name with an *'.RDS'* suffix. If `FALSE`, the saving 
 #' is skipped and the object is simply returned.
 #' @param folder Character value. If character, specifies the output
 #' folder in which the `SPATA2` object is saved. Defaults to the working directory.
-#' @param overwrite Logical. Must be set to TRUE if file directories
-#' under which downloaded files are about to be saved already exist.
-#'
-#' @inherit SPATA2::argument_dummy params
+#' @param overwrite Logical. Must be set to `TRUE` if file directories
+#' under which downloaded files are to be saved already exist.
 #'
 #' @details If `file` is not `FALSE`. The downloaded `SPATA2` object is immediately saved after the download before
 #' it is returned by the function. Note that the file directory is assembled by combining

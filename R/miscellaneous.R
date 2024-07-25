@@ -178,7 +178,7 @@ checkSourceDataFrame <- function(source_df = sourceDataFrame(), ...){
 #' form of citation to give credits to the researchers who
 #' made this data available
 #'
-#' @inherit SPATA2::argument_dummy params
+#' @param object An object of class `SPATA2`.
 #' @param write_lines Logical. If `TRUE`, the string is printed in the
 #' console via `writeLines()`.
 #' @param sample_names Character vector of sample names for which
@@ -434,6 +434,9 @@ load_data_file <- function(directory){
 #' 
 #' @description Returns the \link[=source_df]{source data.frame}.
 #' 
+#' @return Data.frame in which each row corresponds to a spatial data set stored
+#' in a `SPATA2` object.
+#' 
 #' @examples
 #' 
 #' library(SPATA2)
@@ -464,9 +467,8 @@ load_data_file <- function(directory){
 #' kuppe_samples <- sdf_kuppe$sample_name
 #' 
 #' print(kuppe_samples)
-#' 
 #'
-#' @return Data.frame.
+#' @export
 #'
 sourceDataFrame <- function(){
   
@@ -668,12 +670,16 @@ rgx_lookbehind <- function(pattern, negate = FALSE, match = ".*"){
 #' @title Set citation info
 #'
 #' @description Sets information about how to cite this
-#' spata object.
+#' `SPATA2` object.
 #'
-#' @inherit SPATA2::argument_dummy params
-#' @param citation Character value.
+#' @inherit getCitation params
+#' @param citation Character value containing the complete citation.
+#' 
+#' @details
+#' Input for `citation` is set in @@meta_sample$pub_citation.
+#' 
 #'
-#' @return An updated spata object.
+#' @return The updated input object, containing the added, removed or computed results.
 #' @export
 #'
 setCitation <- function(object, citation){

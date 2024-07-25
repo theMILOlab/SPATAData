@@ -7,7 +7,8 @@
 sourceDataFrame()
 }
 \value{
-Data.frame.
+Data.frame in which each row corresponds to a spatial data set stored
+in a \code{SPATA2} object.
 }
 \description{
 Returns the \link[=source_df]{source data.frame}.
@@ -42,6 +43,5 @@ sdf_kuppe <-
 kuppe_samples <- sdf_kuppe$sample_name
 
 print(kuppe_samples)
-
 
 }

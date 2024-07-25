@@ -7,12 +7,17 @@
 setCitation(object, citation)
 }
 \arguments{
-\item{citation}{Character value.}
+\item{object}{An object of class \code{SPATA2}.}
+
+\item{citation}{Character value containing the complete citation.}
 }
 \value{
-An updated spata object.
+The updated input object, containing the added, removed or computed results.
 }
 \description{
 Sets information about how to cite this
-spata object.
+\code{SPATA2} object.
+}
+\details{
+Input for \code{citation} is set in @meta_sample$pub_citation.
 }

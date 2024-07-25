@@ -10,6 +10,8 @@ getCitation(object, write_lines = TRUE)
 getCitationBySample(sample_names)
 }
 \arguments{
+\item{object}{An object of class \code{SPATA2}.}
+
 \item{write_lines}{Logical. If \code{TRUE}, the string is printed in the
 console via \code{writeLines()}.}
 
