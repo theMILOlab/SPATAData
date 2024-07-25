@@ -25,13 +25,6 @@ default the file it is \code{NULL} which makes the function save the object
 under the sample name with an \emph{'.RDS'} suffix. If \code{FALSE}, the saving
 is skipped and the object is simply returned.}
 
-\item{verbose}{Logical. If set to TRUE informative messages regarding
-the computational progress will be printed.
-
-(Warning messages will always be printed.)}
-
-\item{...}{Used to absorb deprecated arguments or functions.}
-
 \item{folder}{Character value. If character, specifies the output
 folder in which the \code{SPATA2} object is saved. Defaults to the working directory.}
 }

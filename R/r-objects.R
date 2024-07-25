@@ -54,7 +54,7 @@ variable_info <- list(
 
 #' @export
 source_df_v3_blueprint <- 
-  tibble(
+  tibble::tibble(
     sample_name = as.character(NA),
     ##############################
     comment = as.character(NA),

@@ -10,9 +10,6 @@ getCitation(object, write_lines = TRUE)
 getCitationBySample(sample_names)
 }
 \arguments{
-\item{object}{An object of class \code{\link[SPATA2]{SPATA2}} or, in case of S4 generics,
-objects of classes for which a method has been defined.}
-
 \item{write_lines}{Logical. If \code{TRUE}, the string is printed in the
 console via \code{writeLines()}.}
 
