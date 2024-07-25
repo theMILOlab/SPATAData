@@ -1,4 +1,10 @@
 
+######---------- script to populate spata2v3 folder ----------#####
+
+# data sets are uploaded in batches according to their "source"
+# this script is structured by:
+# -> source  -------------------------------------------------------
+
 source("scripts/init_session.R")
 
 

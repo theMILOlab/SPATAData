@@ -1,8 +1,10 @@
 
+# packages and functions required by all scripts --------------------------
+
 library(devtools)
 library(glue)
 library(laborga)
-library(SPATA2)
+library(SPATA2) #version >=3.0.0
 library(tidyverse)
 load_all()
 
