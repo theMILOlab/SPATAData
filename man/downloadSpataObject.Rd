@@ -2,13 +2,12 @@
 % Please edit documentation in R/download.R
 \name{downloadSpataObject}
 \alias{downloadSpataObject}
-\title{Download objects of class \code{SPATA2}}
+\title{Download a SPATA2 object}
 \usage{
 downloadSpataObject(
   sample_name,
   overwrite = FALSE,
   file = FALSE,
-  in_shiny = FALSE,
   verbose = TRUE,
   ...
 )
@@ -26,6 +25,11 @@ as a character. If \code{NULL}, the function saves the object
 under the sample name with an \emph{'.RDS'} suffix. If \code{FALSE}, the saving
 is skipped and the object is simply returned.}
 
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
+
 \item{folder}{Character value. If character, specifies the output
 folder in which the \code{SPATA2} object is saved. Defaults to the working directory.}
 }
@@ -33,8 +37,7 @@ folder in which the \code{SPATA2} object is saved. Defaults to the working direc
 The downloaded \code{SPATA2} object.
 }
 \description{
-Downloads a \code{SPATA2} object and returns it. For convenient
-downloads of multiple \code{SPATA2} objects check out \code{downloadSpataObjects()}.
+Downloads a single \code{SPATA2} object and returns it.
 }
 \details{
 If \code{file} is not \code{FALSE}. The downloaded \code{SPATA2} object is immediately saved after the download before
@@ -51,6 +54,10 @@ object <- downloadSpataObject(sample_name = "UKF275T")
 object <- downloadSpataObject(sample_name = "UKF275T", file = TRUE)
 
 # download, assign and save on disk in a specified directory
-object <- downloadSpataObject(sample_name = "UKF275T", file = "my/path/spata_object.RDS")
+object <- downloadSpataObject(sample_name = "UKF275T", file = "my/path/to/spata_object.RDS")
 
+}
+\seealso{
+For convenient downloads of multiple \code{SPATA2} objects
+check out \code{\link[=downloadSpataObjects]{downloadSpataObjects()}}.
 }

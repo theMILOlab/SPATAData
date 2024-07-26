@@ -2,10 +2,9 @@
 
 
 
-#' @title Download objects of class `SPATA2`
+#' @title Download a SPATA2 object
 #'
-#' @description Downloads a `SPATA2` object and returns it. For convenient
-#' downloads of multiple `SPATA2` objects check out \code{downloadSpataObjects()}. 
+#' @description Downloads a single `SPATA2` object and returns it. 
 #'
 #' @param sample_name Character value. The name of the sample you want to
 #' download. Use \code{validSampleNames()} to obtain all valid input options.
@@ -18,12 +17,17 @@
 #' folder in which the `SPATA2` object is saved. Defaults to the working directory.
 #' @param overwrite Logical. Must be set to `TRUE` if file directories
 #' under which downloaded files are to be saved already exist.
+#' @inherit argument_dummy params
 #'
 #' @details If `file` is not `FALSE`. The downloaded `SPATA2` object is immediately saved after the download before
 #' it is returned by the function. Note that the file directory is assembled by combining
 #' `folder` and `file`!
 #'
 #' @return The downloaded `SPATA2` object.
+#' 
+#' @seealso For convenient downloads of multiple `SPATA2` objects 
+#' check out [`downloadSpataObjects()`].
+#' 
 #' @export
 #'
 #' @examples
@@ -36,17 +40,18 @@
 #' object <- downloadSpataObject(sample_name = "UKF275T", file = TRUE)
 #' 
 #' # download, assign and save on disk in a specified directory
-#' object <- downloadSpataObject(sample_name = "UKF275T", file = "my/path/spata_object.RDS")
+#' object <- downloadSpataObject(sample_name = "UKF275T", file = "my/path/to/spata_object.RDS")
 #'
 downloadSpataObject <- function(sample_name,
                                 overwrite = FALSE,
                                 file = FALSE,
-                                in_shiny = FALSE,
                                 verbose = TRUE,
                                 ...){
 
   confuns::is_value(x = overwrite, mode = "logical")
 
+  in_shiny <- base::isTRUE(list(...)[["in_shiny"]])
+  
   source_df <- list(...)[["source_df"]]
 
   if(base::is.null(source_df)){
@@ -164,7 +169,7 @@ downloadSpataObject <- function(sample_name,
 }
 
 
-#' @title Download several `SPATA2` objects
+#' @title Download and save several SPATA2 objects
 #'
 #' @description Main function that downloads several `SPATA2` objects
 #' at the same time and saves each as an .RDS file.
@@ -184,23 +189,22 @@ downloadSpataObject <- function(sample_name,
 #' @examples
 #'
 #' # downloads three objects and
-#' # stores them as "spata_data/UKF275T.RDS", "spata_data/UKF313t.RDS", ... etc.
+#' # saves them as "spata_objects/UKF275T.RDS", "spata_objects/UKF313t.RDS", ... etc.
 #' 
 #'   downloadSpataObjects(
 #'     sample_names = c("UKF275T", "UKF313T", "UKF334T"),
-#'     folder = "spata_objects"
+#'     folder = "spata_objects" # the folder in which to save the files
 #'    )
 #'
 downloadSpataObjects <- function(sample_names,
                                  files = NULL,
                                  folder = base::getwd(),
                                  overwrite = FALSE,
-                                 in_shiny = FALSE,
                                  verbose = TRUE,
                                  ...){
 
-  confuns::is_value(x = folder, mode = "character", skip.allow = TRUE, skip.val = NULL)
-
+  in_shiny <- base::isTRUE(list(...)[["in_shiny"]])
+  
   source_df <- list(...)[["source_df"]]
 
   if(base::is.null(source_df)){

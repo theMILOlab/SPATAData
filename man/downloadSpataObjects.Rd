@@ -2,14 +2,13 @@
 % Please edit documentation in R/download.R
 \name{downloadSpataObjects}
 \alias{downloadSpataObjects}
-\title{Download several \code{SPATA2} objects}
+\title{Download and save several SPATA2 objects}
 \usage{
 downloadSpataObjects(
   sample_names,
   files = NULL,
   folder = base::getwd(),
   overwrite = FALSE,
-  in_shiny = FALSE,
   verbose = TRUE,
   ...
 )
@@ -28,6 +27,11 @@ folder in which the \code{SPATA2} object is saved. Defaults to the working direc
 
 \item{overwrite}{Logical. Must be set to \code{TRUE} if file directories
 under which downloaded files are to be saved already exist.}
+
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
 }
 \value{
 An invisible \code{TRUE}.
@@ -39,11 +43,11 @@ at the same time and saves each as an .RDS file.
 \examples{
 
 # downloads three objects and
-# stores them as "spata_data/UKF275T.RDS", "spata_data/UKF313t.RDS", ... etc.
+# saves them as "spata_objects/UKF275T.RDS", "spata_objects/UKF313t.RDS", ... etc.
 
   downloadSpataObjects(
     sample_names = c("UKF275T", "UKF313T", "UKF334T"),
-    folder = "spata_objects"
+    folder = "spata_objects" # the folder in which to save the files
    )
 
 }

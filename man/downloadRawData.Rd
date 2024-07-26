@@ -28,6 +28,11 @@ folder in which the \code{SPATA2} object is saved. Defaults to the working direc
 
 \item{overwrite}{Logical. Must be set to \code{TRUE} if file directories
 under which downloaded files are to be saved already exist.}
+
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
 }
 \value{
 An invisible TRUE.
