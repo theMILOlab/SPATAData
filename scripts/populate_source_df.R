@@ -4,6 +4,7 @@
 # 1. source packages and functions to deal with local files 
 
 source("scripts/init_session.R")
+source("scripts/google_drive.R")
 
 library(googledrive)
 

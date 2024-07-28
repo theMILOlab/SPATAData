@@ -189,7 +189,14 @@ for(i in seq_along(obj_names)){
       meta_data$organ <- "Spinal Cord"
       meta_data$histo_class <- "Spinal Cord"
       
-    } 
+    } else if(str_detect(obj_name, "Brain")){
+      
+      meta_data$organ <- "Brain"
+      
+    }
+      
+
+      
 
     meta_data$platform <- method
     
@@ -645,7 +652,8 @@ meta_df$organ_side[meta_df$organ_side == "bifrontal"] <- "both"
 
 all_dirs <- 
   list.files("/Users/heilandr/lab/data/spatial_seq/raw/10XVisium/Greenwald_et_al_2024", full.names = T) %>%
-  str_subset(".csv$", negate = T)
+  str_subset(".csv$", negate = T) %>% 
+  str_subset("citation", negate = T)
 
 open_overview_pdf(subfolder)
 for(main_dir in all_dirs){
@@ -744,7 +752,7 @@ for(main_dir in all_dirs){
       
     } else if(str_detect(sample_name, "BWH")){
       
-      meta_data$instituation <- "Brigham and Women's Hospital"
+      meta_data$institution <- "Brigham and Women's Hospital"
       
     }
     
@@ -759,7 +767,7 @@ for(main_dir in all_dirs){
       
       meta_data$histo_class <- "Glioblastoma"
       
-    } else if(mdf$histology == "OGD"){
+    } else if(mdf$histology == "ODG"){
       
       meta_data$histo_class <- "Oligodendroglioma"
       
