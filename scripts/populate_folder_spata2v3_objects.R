@@ -7,6 +7,47 @@
 
 source("scripts/init_session.R")
 
+create_subfolder <- function(subfolder){
+  
+  dir.create(file.path("spata2v3_objects", subfolder))
+  
+}
+
+open_overview_pdf <- function(subfolder){
+  
+  pdf(file.path("spata2v3_objects", subfolder, "sample_overview.pdf"))
+  
+}
+
+plot_overview <- function(object){
+  
+  p_overview <- 
+    (plotSurface(object, pt_alpha = 0) + labs(subtitle = object@sample)) +
+    (plotSurface(object, color_by = "tissue_section") + legendBottom())
+  
+  plot(p_overview)
+  
+}
+
+read_matrix_mtx <- function(dir){
+  
+  all_files <- list.files(dir, full.names = T)
+  
+  dir_mtr <- str_subset(all_files, ".mtx.gz$")
+  dir_bcs <- str_subset(all_files, "barcodes.tsv.gz")
+  dir_features <- str_subset(all_files, "features.tsv.gz")
+  
+  mtr <- Matrix::readMM(dir_mtr)
+  bcs <- readr::read_tsv(dir_bcs, col_names = F)
+  feats <- readr::read_tsv(dir_features, col_names =F)
+  
+  colnames(mtr) <- as.character(bcs[[1]])
+  rownames(mtr) <- as.character(feats[[2]])
+  
+  return(mtr)
+  
+}
+
 
 # TENxVisiumData ----------------------------------------------------------
 
@@ -47,12 +88,6 @@ obj_names <-
   str_subset("Colorectal", negate = T) %>% 
   str_subset("Ovarian", negate = T)
 
-iterate <- 
-  list(
-    organ = c("Cerebellum", "Brain", "Heart", "Lymph Node", "Spinal Cord", "Brain", "Brain", "Brain", "Kidney"), 
-    human_species = c("Homo sapiens")
-  )
-
 
 pdf(file = "spata2v3_objects/TENxVisiumData/sample_overview.pdf")
 for(i in seq_along(obj_names)){
@@ -82,7 +117,7 @@ for(i in seq_along(obj_names)){
       as.data.frame() %>% 
       rownames_to_column("barcodes") %>% 
       as_tibble() %>% 
-      rename(x_orig = pxl_col_in_fullres, y_orig = pxl_row_in_fullres)
+      dplyr::rename(x_orig = pxl_col_in_fullres, y_orig = pxl_row_in_fullres)
     
     coords_df$barcodes <- str_replace(coords_df$barcodes, pattern = "\\.", replacement = "-")
     
@@ -122,7 +157,7 @@ for(i in seq_along(obj_names)){
     meta_data$institution <- "10X Genomics"
     meta_data$donor_species <- ifelse(str_detect(obj_name, "Human"), "Homo sapiens", "Mus musculus")
     
-    if(obj_name == "HumanCerebellum"){
+    if(str_detect(obj_name, "HumanCerebellum")){
       
       meta_data$organ <- "Cerebellum"
       meta_data$histo_class = "Cortex"
@@ -132,7 +167,7 @@ for(i in seq_along(obj_names)){
       meta_data$organ <- "Lymph Node"
       meta_data$histo_class = "Lymph Node"
       
-    } else if(obj_name == "HumanGliolastoma"){
+    } else if(str_detect(obj_name, "Glioblastoma")){
       
       meta_data$organ <- "Cerebrum"
       meta_data$pathology <- "tumor"
@@ -144,12 +179,17 @@ for(i in seq_along(obj_names)){
       meta_data$organ <- "Kidney"
       meta_data$histo_class = "Kidney"
       
-    } else {
+    } else if(obj_name == "HumanHeart"){
       
-      meta_data$organ <- "Brain"
-      meta_data$histo_class <- "Brain"
+      meta_data$organ <- "Heart"
+      meta_data$histo_class <- "Cardiac Muscle"
       
-    }
+    } else if(obj_name == "HumanSpinalCord"){
+      
+      meta_data$organ <- "Spinal Cord"
+      meta_data$histo_class <- "Spinal Cord"
+      
+    } 
 
     meta_data$platform <- method
     
@@ -576,3 +616,460 @@ object <- setDefault(object, display_image = T)
 object <- identifyTissueOutline(object)
 
 saveSpataObject(object)
+
+# Greenwald et al. 2024 ---------------------------------------------------
+library(Seurat)
+library(SPATA2)
+library(stringr)
+library(jsonlite)
+library(tidyverse)
+library(confuns)
+
+subfolder <- "Greenwald_et_al_2024"
+create_subfolder(subfolder)
+
+citation <- readRDS("/Users/heilandr/lab/data/spatial_seq/raw/10XVisium/Greenwald_et_al_2024/citation.RDS")
+
+# process meta
+meta_df <-  
+  read_csv("/Users/heilandr/lab/data/spatial_seq/raw/10XVisium/Greenwald_et_al_2024/meta_data_frame.csv")
+colnames(meta_df) <- tolower(colnames(meta_df)) %>% str_replace_all("-", "_")
+
+meta_df <- 
+ tidyr::separate(meta_df, col = location, into = c("organ_side", "organ_part")) 
+
+meta_df <- meta_df[1:21, ]
+
+meta_df$organ_part[meta_df$organ_side == "bifrontal"] <- "frontal"
+meta_df$organ_side[meta_df$organ_side == "bifrontal"] <- "both"
+
+all_dirs <- 
+  list.files("/Users/heilandr/lab/data/spatial_seq/raw/10XVisium/Greenwald_et_al_2024", full.names = T) %>%
+  str_subset(".csv$", negate = T)
+
+open_overview_pdf(subfolder)
+for(main_dir in all_dirs){
+  
+  sample_name_prel <- confuns::str_extract_after(main_dir, pattern = "Greenwald_et_al_2024\\/")
+  
+  sample_name <- str_suggest_vec(sample_name_prel, pool = meta_df$sample_id, max.dist = 10, n.top = 1)
+  
+  mdf <- filter(meta_df, sample_id == {{sample_name}})
+  
+  if(nrow(mdf) == 0){
+    
+    message(glue::glue("No meta data for dir {main_dir}."))
+    
+  } else {
+    
+    message(glue::glue("Working on dir {main_dir}."))
+    
+    # get directories
+    all_files <- list.files(main_dir, full.names = T)
+    
+    dir_mtr <- str_subset(all_files, "\\.h5$")
+    dir_coords <- str_subset(all_files, "tissue_positions")
+    dir_img <- str_subset(all_files, "lowres_image|hires_image")
+    dir_sfs <- str_subset(all_files, "scalefactors")
+    
+    # counts
+    mtr <- Seurat::Read10X_h5(filename = dir_mtr)
+    
+    # image related
+    image <- EBImage::readImage(files = dir_img)
+    name_img_ref <- ifelse(str_detect(dir_img, "hires"), "hires", "lowres")
+    scale_factors <- read_json(dir_sfs)
+    image_sf <- scale_factors[[str_c("tissue_", name_img_ref, "_scalef")]]
+    
+    # coords 
+    if(is_empty(dir_coords)){
+      
+      coords_df <- visium_spots$VisiumSmall %>% rename(barcodes = barcode)
+      coords_df$x_orig <- 0
+      coords_df$y_orig <- 0
+      
+      coords_df <- filter(coords_df, barcodes %in% colnames(mtr))
+      
+      warning(glue::glue("no coords for sample {sample_name}"))
+      
+    } else {
+      
+      coords_df <- read_coords_visium(dir_coords)
+      
+    }
+    
+    # initiate object
+    object <- 
+      initiateSpataObject(
+        sample_name = sample_name, 
+        count_mtr = mtr, 
+        coords_df = coords_df, 
+        modality = "gene",
+        img = image, 
+        img_name = name_img_ref, 
+        scale_factors = list(image = image_sf), 
+        spatial_method = VisiumSmall
+      )
+    
+    # visium specifics
+    object <- computePixelScaleFactor(object)
+    object <- identifyTissueOutline(object)
+    
+    spot_size <-
+      scale_factors$fiducial_diameter_fullres *
+      scale_factors[[stringr::str_c("tissue", name_img_ref, "scalef", sep = "_")]] /
+      base::max(dim(image))*100
+    
+    spot_scale_fct <- 1.15
+    
+    sp_data <- getSpatialData(object)
+    sp_data@method@method_specifics[["spot_size"]] <- spot_size * spot_scale_fct
+    object <- setDefault(object, pt_size = spot_size*spot_scale_fct)
+    object <- setSpatialData(object, sp_data)
+    
+    # add meta data
+    meta_data <- list()
+    meta_data$donor_id <- mdf$patient_id
+    meta_data$sex <- ifelse(mdf$sex == "F", "female", "male")
+    meta_data$tissue_age <- mdf$age
+    meta_data$donor_species <- "Homo sapiens"
+    meta_data$grade <- "IV"
+    if(str_detect(sample_name, "ZH")){
+      
+      meta_data$instituion <- "University Hospital Zurich"
+      
+    } else if(str_detect(sample_name, "MGH")){
+      
+      meta_data$institution <- "Massachusetts General Hospital"
+      
+    } else if(str_detect(sample_name, "BWH")){
+      
+      meta_data$instituation <- "Brigham and Women's Hospital"
+      
+    }
+    
+    meta_data$organ <- "Cerebrum"
+    meta_data$organ_side <- mdf$organ_side
+    meta_data$organ_part <- mdf$organ_part
+    meta_data$grade <- WHOGrades(mdf$grade)
+    meta_data$pathology <- "tumor"
+    meta_data$platform <- "VisiumSmall"
+    
+    if(mdf$histology == "GBM"){
+      
+      meta_data$histo_class <- "Glioblastoma"
+      
+    } else if(mdf$histology == "OGD"){
+      
+      meta_data$histo_class <- "Oligodendroglioma"
+      
+    } else if(mdf$histology == "AA"){
+      
+      meta_data$histo_class <- "Astrocytoma"
+      
+    }
+    
+    meta_data$pub_citation <- citation
+    meta_data$pub_journal <- "Cell"
+    meta_data$pub_year <- 2024
+    meta_data$workgroup <- "TiroshLab"
+    
+    meta_data$mgmt_status <- mdf$mgmt_status
+    
+    meta_data$IDH_mut <- str_detect(mdf$tumor, "IDH-mut")
+    
+    meta_data$tags <- c("cancer", "brain", "cns")
+    
+    object <- addSampleMetaData(object, meta_data = meta_data)
+    
+    # save object
+    dir <- file.path("spata2v3_objects", "Greenwald_et_al_2024", str_c(sample_name, ".RDS"))
+    object <- setSpataDir(object, dir)
+    
+    saveSpataObject(object)
+    
+    # plot
+    p_overview <- 
+      (plotSurface(object, pt_alpha = 0) + labs(subtitle = object@sample)) +
+      (plotSurface(object, color_by = "tissue_section") + legendBottom())
+    
+    plot(p_overview)
+    
+  }
+  
+}
+dev.off()
+
+# Martinez-Hernandez_et_al_2024 -------------------------------------------
+library(Matrix)
+
+
+subfolder <- "Martinez_Hernandez_et_al_2024"
+create_subfolder(subfolder)
+
+
+
+dir_main <- "/Users/heilandr/lab/data/spatial_seq/raw/10XVisium/Martinez_Hernandez_et_al_2024"
+dir_samples <- 
+  list.files(dir_main, full.names = T) %>% 
+  str_subset("citation.RDS", negate = T) %>% 
+  str_subset("meta_data_frame.csv", negate = T) %>% 
+  str_subset("supp_info", negate = T)
+
+citation <- readRDS(file.path(dir_main, "citation.RDS"))
+
+meta_df <- read_csv(file.path(dir_main, "meta_data_frame.csv"))
+colnames(meta_df) <- tolower(colnames(meta_df)) %>% str_replace_all("-| ", "_") 
+
+meta_df <- filter(meta_df, !is.na(visium_samples))
+
+open_overview_pdf(subfolder)
+for(dir_sample in dir_samples){
+  
+  sample_name <- str_extract_after(dir_sample, "et_al_2024\\/")
+  
+  mdf <- filter(meta_df, visium_samples == {{sample_name}})
+  
+  all_files <- list.files(dir_sample, full.names = T)
+  
+  # mtr 
+  mtr <- read_matrix_mtx(dir_sample)
+  
+  dir_coords <- str_subset(all_files, "tissue_positions")
+  dir_img <- str_subset(all_files, "hires_image")
+  dir_sfs <- str_subset(all_files, "scalefactors")
+  
+  # image related
+  image <- EBImage::readImage(files = dir_img)
+  name_img_ref <- ifelse(str_detect(dir_img, "hires"), "hires", "lowres")
+  scale_factors <- read_json(dir_sfs)
+  image_sf <- scale_factors[[str_c("tissue_", name_img_ref, "_scalef")]]
+  
+  # coords 
+  if(is_empty(dir_coords)){
+    
+    coords_df <- visium_spots$VisiumSmall %>% rename(barcodes = barcode)
+    coords_df$x_orig <- 0
+    coords_df$y_orig <- 0
+    
+    coords_df <- filter(coords_df, barcodes %in% colnames(mtr))
+    
+    warning(glue::glue("no coords for sample {sample_name}"))
+    
+  } else {
+    
+    coords_df <- read_coords_visium(dir_coords)
+    
+  }
+  
+  object <- 
+    initiateSpataObject(
+      sample_name = sample_name, 
+      count_mtr = mtr, 
+      modality = "gene", 
+      coords_df = coords_df, 
+      img = image, 
+      img_name = "hires",
+      scale_factors = list(image = image_sf), 
+      spatial_method = VisiumSmall
+    )
+  
+  object <- computePixelScaleFactor(object)
+  object <- identifyTissueOutline(object)
+  
+  image_lowres <- EBImage::readImage(str_subset(all_files, "lowres_image"))
+  
+  object <- 
+    registerImage(
+      object = object, 
+      img = image_lowres,
+      img_name = "lowres"
+    )
+  
+  object <- activateImage(object, img_name = "lowres", unload = F)
+  
+  # add meta data
+  meta_data <- list()
+  meta_data$donor_species <- "Homo sapiens"
+  meta_data$histo_class <- ifelse(str_detect(mdf$pathological_diagnosis, "Healthy"), "Healthy tissue", mdf$pathological_diagnosis)
+  meta_data$institution <- "Hospital Universitario la Princesa"
+  meta_data$organ <- "Thyroid Gland"
+  meta_data$pathology <- ifelse(meta_data$histo_class == "Healthy", NA_character_, "autoimmune")
+  
+  meta_data$pub_citation <- citation
+  meta_data$pub_journal <- "Nature Communications"
+  meta_data$pub_year <- 2024
+  
+  meta_data$tissue_age <- mdf$age
+  meta_data$sex <- ifelse(mdf$sex == "F", "female", "male")
+  meta_data$workgroup <- "MarazuelaLab"
+  
+  object <- addSampleMetaData(object, meta_data = meta_data)
+  
+  # save object
+  dir <- file.path("spata2v3_objects", subfolder, str_c(sample_name, ".RDS"))
+  object <- setSpataDir(object, dir)
+  saveSpataObject(object)
+  
+  
+  plot_overview(object)
+  
+}
+dev.off()
+
+
+
+# Ren et al. 2023 ---------------------------------------------------------
+
+subfolder <- "Ren_et_al_2023"
+create_subfolder(subfolder)
+
+main_dir <- "/Users/heilandr/lab/data/spatial_seq/raw/10XVisium/Ren_et_al_2023"
+
+meta_df <- readxl::read_xlsx(path = file.path(main_dir, "meta_data_frame.xlsx"))
+
+all_folders <- list.files(main_dir, full.names = T) %>% str_subset(pattern = "out$")
+
+open_overview_pdf(subfolder)
+for(folder in all_folders){
+  
+  sample_name <- 
+    str_extract_after(folder, pattern = "Ren_et_al_2023\\/") %>% 
+    str_remove(pattern = "_spaceranger_out")
+  
+  mdf <- filter(meta_df, Sample == {{sample_name}})
+  
+  object <- 
+    initiateSpataObjectVisium(
+      sample_name = sample_name, 
+      directory_visium = folder, 
+      img_ref = "hires", 
+      img_active = "lowres"
+    )
+  
+  object <- loadImages(object)
+  
+  # add meta data
+  meta_data <- list()
+  meta_data$donor_species <- "Homo sapiens"
+  meta_data$grade <- "IV"
+  meta_data$histo_class <- mdf$histo_class
+  meta_data$institution <- "West China Hospital"
+  meta_data$organ <- mdf$organ
+  meta_data$organ_part <- mdf$organ_part
+  meta_data$organ_side <- mdf$side
+  meta_data$pathology <- "tumor"
+  meta_data$platform <- "VisiumSmall"
+  meta_data$pub_citation <- citation
+  meta_data$pub_journal <- "Nature Communications"
+  meta_data$pub_year <- 2023
+  meta_data$sex <- NA
+  meta_data$tags <- c("brain;cns;cancer")
+  meta_data$tissue_age_approx <- mdf$`Age at diagnosis`
+  meta_data$workgroup <- "WangLab"
+  
+  object <- addSampleMetaData(object, meta_data = meta_data)
+  
+  # save object
+  dir <- file.path("spata2v3_objects", subfolder, str_c(sample_name, ".RDS"))
+  saveSpataObject(object, dir = dir)
+  
+  plot_overview(object)
+  
+}
+dev.off()
+
+
+
+# Valdeolivas et al 2024 --------------------------------------------------
+subfolder <- "Valdeolivas_et_al_2024"
+create_subfolder(subfolder)
+
+dir_main <- "/Users/heilandr/lab/data/spatial_seq/raw/10XVisium/Valdeolivas_et_al_2024"
+
+all_folders <- 
+  list.files(dir_main, full.names = T) %>% 
+  str_subset(pattern = "meta_data", negate = T) %>% 
+  str_subset(pattern = "citation", negate = T)
+
+citation <- readRDS(file.path(dir_main, "citation.RDS"))
+
+meta_df <- readxl::read_xlsx(file.path(dir_main, "meta_data_frame_proc.xlsx"))
+
+annotation_dirs <- 
+  list.files(all_folders[1], full.names = T) %>% 
+  str_subset(".rds$") %>% 
+  str_subset(".csv$", negate = T)
+
+open_overview_pdf(subfolder)
+for(folder in all_folders[2:length(all_folders)]){
+  
+  sample_name <- confuns::str_extract_after(folder, "Valdeolivas_et_al_2024\\/")
+  
+  sn <- 
+    str_suggest_vec(str_extract(sample_name, "_.*_") %>% str_remove_all("_"), pool = meta_df$sample_name, max.dist = 20, n.top =1)
+  
+  mdf <- filter(meta_df, sample_name == {{sn}})
+  
+  if(nrow(mdf) == 0){
+    
+    warning(glue::glue("no meta data for dir {folder}."))
+    
+  }
+  
+  object <- 
+    initiateSpataObjectVisium(
+      sample_name = sample_name, 
+      directory_visium = folder, 
+      img_ref = "hires", 
+      img_active = "lowres"
+    )
+  
+  object <- loadImages(object)
+  
+  
+  # add meta data
+  meta_data <- list()
+  
+  # add pathology annotations
+  
+  ann_dir <- str_subset(annotation_dirs, sample_name)
+  
+  if(length(ann_dir) == 1){
+    
+    df <- 
+      readRDS(ann_dir) %>% 
+      as_tibble() %>% 
+      rename(barcodes = spot_id)
+    
+    object <- addFeatures(object, feature_df = df, feature_names = c("seurat_clusters", "Pathologist_Annotations"))
+    object@meta_obs$Pathologist_Annotations <- as.factor(object@meta_obs$Pathologist_Annotations)
+    object@obj_info$spat_segm_vars <- "Pathologist_Annotations"
+    
+    meta_data$comment <- "contains histological segmentation variable"
+    
+    
+  }
+  
+  meta_data$donor_species <- "Homo sapiens"
+  meta_data$histo_class <- mdf$histo_class
+  meta_data$institution <- "Ludwig Maximilian University of Munich"
+  meta_data$organ <- mdf$organ
+  meta_data$organ_part <- mdf$organ_part
+  meta_data$pathology <- "tumor"
+  meta_data$platform <- "VisiumSmall"
+  meta_data$pub_citation <- citation
+  meta_data$pub_journal <- "Precision Oncology"
+  meta_data$pub_year <- 2024
+  meta_data$sex <- NA
+  
+  object <- addSampleMetaData(object, meta_data = meta_data)
+  
+  # add directory
+  object <- setSpataDir(object, dir = file.path("spata2v3_objects", subfolder, str_c(sample_name, ".RDS")))
+  
+  saveSpataObject(object)
+  
+}
+dev.off()
+

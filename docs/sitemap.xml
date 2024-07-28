@@ -1,0 +1,25 @@
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>/404.html</loc></url>
+<url><loc>/authors.html</loc></url>
+<url><loc>/index.html</loc></url>
+<url><loc>/reference/WHOGrades.html</loc></url>
+<url><loc>/reference/addSample.html</loc></url>
+<url><loc>/reference/addSampleManually.html</loc></url>
+<url><loc>/reference/addSampleMetaData.html</loc></url>
+<url><loc>/reference/addSampleTagsManually.html</loc></url>
+<url><loc>/reference/adjustSampleManually.html</loc></url>
+<url><loc>/reference/argument_dummy.html</loc></url>
+<url><loc>/reference/downloadRawData.html</loc></url>
+<url><loc>/reference/downloadSpataObject.html</loc></url>
+<url><loc>/reference/downloadSpataObjects.html</loc></url>
+<url><loc>/reference/getCitation.html</loc></url>
+<url><loc>/reference/getSampleMetaData.html</loc></url>
+<url><loc>/reference/index.html</loc></url>
+<url><loc>/reference/launchSpataData.html</loc></url>
+<url><loc>/reference/removeSampleManually.html</loc></url>
+<url><loc>/reference/setCitation.html</loc></url>
+<url><loc>/reference/sourceDataFrame.html</loc></url>
+<url><loc>/reference/sourceDataFrameTags.html</loc></url>
+<url><loc>/reference/validSampleNames.html</loc></url>
+</urlset>
+
