@@ -365,7 +365,7 @@ downloadSpataObjects <- function(sample_names,
 #' the data you have to unzip the folder manually.
 #'
 #' @return An invisible TRUE.
-#' @keywords internal
+#' @export
 #'
 downloadRawData <- function(sample_names,
                             files = NULL,
@@ -492,11 +492,6 @@ downloadRawData <- function(sample_names,
   base::invisible(TRUE)
 
 }
-
-
-#' @title temporary fix
-#' @export
-downloadRawData <- function(){ TRUE }
 
 
 

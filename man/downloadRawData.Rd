@@ -4,13 +4,35 @@
 \alias{downloadRawData}
 \title{Download raw data}
 \usage{
-downloadRawData()
-
-downloadRawData()
+downloadRawData(
+  sample_names,
+  files = NULL,
+  folder = base::getwd(),
+  overwrite = FALSE,
+  in_shiny = FALSE,
+  verbose = TRUE,
+  ...
+)
 }
 \arguments{
 \item{sample_names}{Character vector. The sample names of the data
 to be downloaded. Use \code{validSampleNames()} to obtain all valid input options.}
+
+\item{files}{Character vector or NULL. Specifies the file names under which the
+\code{SPATA2} objects are saved. If character, the input must be of the same length
+as the input for argument \code{sample_names}. If NULL, the files are named
+according to the sample name.}
+
+\item{folder}{Character value. If character, specifies the output
+folder in which the \code{SPATA2} object is saved. Defaults to the working directory.}
+
+\item{overwrite}{Logical. Must be set to \code{TRUE} if file directories
+under which downloaded files are to be saved already exist.}
+
+\item{verbose}{Logical. If set to TRUE informative messages regarding
+the computational progress will be printed.
+
+(Warning messages will always be printed.)}
 }
 \value{
 An invisible TRUE.
@@ -23,4 +45,3 @@ The directory of the .zip folder is eventually created
 with \code{stringr::str_c(folder, "/", sample, ".zip")}. To access
 the data you have to unzip the folder manually.
 }
-\keyword{internal}
