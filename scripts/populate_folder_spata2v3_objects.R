@@ -475,7 +475,7 @@ for(folder in all_folders){
   meta_data$pathology <- "tumor"
   meta_data$platform <- "VisiumLarge"
   
-  object <- addSampleMetaData(object meta_data = meta_data)
+  object <- addSampleMetaData(object, meta_data = meta_data)
   
 }
 

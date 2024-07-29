@@ -494,8 +494,9 @@ downloadRawData <- function(sample_names,
 }
 
 
-
-
+#' @title temporary fix
+#' @export
+downloadRawData <- function(){ TRUE }
 
 
 

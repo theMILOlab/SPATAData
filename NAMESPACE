@@ -2,6 +2,7 @@
 
 export(WHOGrades)
 export(addSampleMetaData)
+export(downloadRawData)
 export(downloadSpataObject)
 export(downloadSpataObjects)
 export(getCitation)
