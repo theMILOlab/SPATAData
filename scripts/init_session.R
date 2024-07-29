@@ -9,6 +9,14 @@ library(tidyverse)
 load_all()
 
 
+
+create_subfolder <- function(subfolder){
+  
+  dir.create(file.path("spata2v3_objects", subfolder))
+  
+}
+
+
 extract_sample_name <- function(dir){
   
   stringr::str_remove(dir, pattern = "\\.RDS$") %>% 
@@ -59,6 +67,41 @@ nTissueSections <- function(object){
     dplyr::filter(tissue_section != "tissue_section_0") %>% 
     dplyr::pull(tissue_section) %>% 
     dplyr::n_distinct()
+  
+}
+
+open_overview_pdf <- function(subfolder){
+  
+  pdf(file.path("spata2v3_objects", subfolder, "sample_overview.pdf"))
+  
+}
+
+plot_overview <- function(object){
+  
+  p_overview <- 
+    (plotSurface(object, pt_alpha = 0) + labs(subtitle = object@sample)) +
+    (plotSurface(object, color_by = "tissue_section") + legendBottom())
+  
+  plot(p_overview)
+  
+}
+
+read_matrix_mtx <- function(dir){
+  
+  all_files <- list.files(dir, full.names = T)
+  
+  dir_mtr <- str_subset(all_files, ".mtx.gz$")
+  dir_bcs <- str_subset(all_files, "barcodes.tsv.gz")
+  dir_features <- str_subset(all_files, "features.tsv.gz")
+  
+  mtr <- Matrix::readMM(dir_mtr)
+  bcs <- readr::read_tsv(dir_bcs, col_names = F)
+  feats <- readr::read_tsv(dir_features, col_names =F)
+  
+  colnames(mtr) <- as.character(bcs[[1]])
+  rownames(mtr) <- as.character(feats[[2]])
+  
+  return(mtr)
   
 }
 

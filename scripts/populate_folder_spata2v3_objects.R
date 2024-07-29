@@ -7,46 +7,7 @@
 
 source("scripts/init_session.R")
 
-create_subfolder <- function(subfolder){
-  
-  dir.create(file.path("spata2v3_objects", subfolder))
-  
-}
 
-open_overview_pdf <- function(subfolder){
-  
-  pdf(file.path("spata2v3_objects", subfolder, "sample_overview.pdf"))
-  
-}
-
-plot_overview <- function(object){
-  
-  p_overview <- 
-    (plotSurface(object, pt_alpha = 0) + labs(subtitle = object@sample)) +
-    (plotSurface(object, color_by = "tissue_section") + legendBottom())
-  
-  plot(p_overview)
-  
-}
-
-read_matrix_mtx <- function(dir){
-  
-  all_files <- list.files(dir, full.names = T)
-  
-  dir_mtr <- str_subset(all_files, ".mtx.gz$")
-  dir_bcs <- str_subset(all_files, "barcodes.tsv.gz")
-  dir_features <- str_subset(all_files, "features.tsv.gz")
-  
-  mtr <- Matrix::readMM(dir_mtr)
-  bcs <- readr::read_tsv(dir_bcs, col_names = F)
-  feats <- readr::read_tsv(dir_features, col_names =F)
-  
-  colnames(mtr) <- as.character(bcs[[1]])
-  rownames(mtr) <- as.character(feats[[2]])
-  
-  return(mtr)
-  
-}
 
 
 # TENxVisiumData ----------------------------------------------------------
@@ -488,6 +449,37 @@ dev.off()
 
 
 
+# 10X Visium example data sets VisiumLarge --------------------------------
+
+subfolder <- "10X_example_data_sets_VisiumLarge"
+create_subfolder(subfolder)
+
+dir_main <- "/Users/heilandr/lab/data/spatial_seq/raw/10XVisium/10X_example_data_sets_VisiumLarge"
+
+all_folders <- list.files(dir_main, full.names = T)
+
+for(folder in all_folders){
+  
+  sample_name <- confuns::str_extract_after(folder, "VisiumLarge\\/")
+  
+  object <- 
+    initiateSpataObjectVisium(
+      directory_visium = folder, 
+      sample_name = sample_name
+    )
+  
+  meta_data <- list()
+  meta_data$donor_species <- "Homo sapiens"
+  meta_data$institution <- "10X Genomics"
+  meta_data$organ <- "Colon"
+  meta_data$pathology <- "tumor"
+  meta_data$platform <- "VisiumLarge"
+  
+  object <- addSampleMetaData(object meta_data = meta_data)
+  
+}
+
+
 # Regal et al. 2023 -------------------------------------------------------
 
 dir.create("spata2v3_objects/Regal_et_al_2023")
@@ -744,7 +736,7 @@ for(main_dir in all_dirs){
     meta_data$grade <- "IV"
     if(str_detect(sample_name, "ZH")){
       
-      meta_data$instituion <- "University Hospital Zurich"
+      meta_data$institution <- "University Hospital Zurich"
       
     } else if(str_detect(sample_name, "MGH")){
       
