@@ -39,9 +39,10 @@ if(n_need_upd != 0){
   message(glue("Updating {n_need_upd} samples."))
   for(i in 1:n_need_upd){
     
+    
     instr <- update_df[i,]
     
-    confuns::give_feedback(msg = glue("Updating sample {instr$sample_name}."))
+    confuns::give_feedback(msg = glue("Updating sample {instr$sample_name}: {i}/{n_need_upd}."))
     
     googledrive::drive_update(
       file = instr$id, 

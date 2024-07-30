@@ -226,11 +226,12 @@ get_overview_df <- function(){
   
   sample_names <- 
     purrr::map(
-      .x = list.files("spata2v3_objects", full.names = TRUE, recursive = FALSE),
-      .f = ~ 
-        list.files(.x, full.names = FALSE, recursive = FALSE) %>% 
-        stringr::str_subset(pattern = ".RDS$") %>% 
-        stringr::str_remove(pattern = ".RDS$")
+      .x = local_dirs,
+      .f = 
+        ~ 
+        stringr::str_subset(.x, pattern = ".RDS$") %>% 
+        stringr::str_remove(pattern = ".RDS$") %>% 
+        stringr::str_remove(pattern = "^.*\\/")
     ) %>% 
     purrr::flatten_chr()
   
