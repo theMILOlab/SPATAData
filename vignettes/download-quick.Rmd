@@ -1,0 +1,264 @@
+---
+title: "Citation"
+output:
+  html_document:
+    theme: flatly
+    df_print: paged
+    css: "markdown-styles.css"
+    toc: true
+    toc_depth: 3
+
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE, fig.show = "hold", out.width = "50%", message = FALSE, warning = FALSE)
+
+devtools::load_all()
+library(SPATAData)
+library(dplyr)
+library(stringr)
+library(ggplot2)
+```
+
+## 1. Introduction
+
+The package SPATAData gives access to our data base of spatial transcriptomic samples. Furthermore, it provides easy access to data sets that have been already published. We are continuously updating this collection so make sure to check for package updates on a regular basis. Please not that many of these data sets are not owned by us! Make sure to use the correct citation if you download and use them for your analysis. See more under section 4. Citation.
+
+```{r echo = T, eval = F}
+
+# install SPATADAta with:
+devtools::install_github(repo = "theMILOlab/SPATAData")
+
+# and if you have not already:  
+devtools::install_github("kueckelj/confuns")
+
+```
+
+We, the **MILOlab**, are a workgroup focused on neurooncology. Our database is predominantly composed of human samples from the cerebrum (a). Nonetheless, we have also curated multiple objects from various other organs (b) with distinct histological classifications. 
+
+Utilize the source `data.frame` as described below to obtain an overview and filter samples that may be relevant to your research. Note the differentiation between the organ *Brain* for mice tissue donors and *Cerebrum* for human tissue donors. This distinction is important because, in the case of Visium datasets, mouse samples usually encompass the entire intracranial central nervous system (commonly referred to as *Brain*). Due to their size, human brain samples are derived from specific organs (column: *organ*, with values such as *Cerebrum*, *Midbrain*, *Cerebellum*) and specific locations (column: *organ_part*, with values such as *frontal lobe*, *temporal lobe*, *corpus callosum*).
+
+
+```{r echo = F, eval = T}
+
+source_df <- sourceDataFrame()
+
+ns <- nrow(source_df)
+no <- n_distinct(source_df$organ)
+nh <- n_distinct(source_df$histo_class)
+
+p1 <- 
+  ggplot(filter(source_df, organ == "Cerebrum")) + 
+  geom_bar(mapping = aes(x = histo_class), color = "black", fill = "steelblue") + 
+  theme_bw() + 
+  coord_flip() + 
+  labs(subtitle = "a) Organ: Cerebrum")
+
+p2 <- 
+  ggplot(filter(source_df, !organ %in% c("Cerebrum", "Brainstem"))) + 
+  geom_bar(mapping = aes(x = organ), color = "black", fill = "steelblue") + 
+  theme_bw() + 
+  coord_flip() + 
+  labs(subtitle = "b) Other organs")
+
+p1
+p2
+  
+
+```
+
+## 2. The source data.frame
+
+The last version of SPATAData used to have an interactive interface in which data samples could be viewed and downloaded by mouse click. This interface is currently not available (but will be, hopefully, in the months to come.) Till then, you can make use of the source data.frame directly in combination with some dplyr logic. 
+
+## 2.1 Structure 
+
+The source data.frame of SPATAData, as obtained by `sourceDataFrame()`, contains web links as well as meta data to multiple spatial data sets that have been published so far. Currently it counts a total of `r ns` samples across `r no` organs and `r nh` histological classifications. In the source data.frame every row corresponds to a data set. Hence, you can use dplyr to filter for data sets that fit your interest by filtering for specific characteristics. The following variables provide meta data about each data set. 
+
+- `sample_name`: The unique identifier for each sample with which to refer to them.
+- `comment`: Additional comments about the sample.
+- `donor_id`: Unique identifier for the donor (useful to identify matching samples).
+- `donor_species`: The species of the donor (currently *Homo sapiens* and *Mus musculus*).
+- `grade`: In case of cancer samples the WHO grade of the sample.
+- `grade_sub`: Sub-grade of the sample.
+- `histo_class`: Character. The histological classification, particularly important for pathological samples.
+- `histo_class_sub`: Character. Sub-classification of the histological class.
+- `institution`: Institution where the sample was collected and to which the workgroup belongs.
+- `lm_source`: Date-time. Last instance when the sample was modified.
+- `organ`: The organ from which the sample was taken.
+- `organ_part`: Specific part of the organ from which the sample was taken. E.g. *frontal* or *temporal* lobe in case of samples from the central nervous system.
+- `pathology`: Loose description of the pathological type of the sample. NA if the tissue is healthy.
+- `platform`: The platform used for the experiment (*VisiumSmall*, *VisiumLarge*, *MERFISH*, ...).
+- `pub_citation`: The proper citation for the publication related to the sample.
+- `pub_doi`: DOI of the publication related to the sample.
+- `pub_journal`: The journal where the related publication was published.
+- `pub_year`: Year of publication.
+- `sex`: Sex of the donor.
+- `side`: Side of the organ from which the sample was taken.
+- `tags`: Additional tags related to the sample providing miscellaneous information.
+- `tissue_age`: Age of the tissue in years - age of the donor during extraction.
+- `web_link`: The weblink with which to download the `SPATA2` object.
+- `workgroup`: Workgroup or team responsible for the sample.
+
+Furthermore, there are variables that describe the sample data set and quality control results.
+
+- `mean_counts`: Mean molecular counts per observation.
+- `median_counts`: Median molecular counts per observation.
+- `modality_gene`: Indicates if the data modalities of the object include gene expression.
+- `modality_metabolite`: Indicates if the data modalities of the object include metabolites.
+- `modality_protein`: Indicates if the data modality of the object include protein expressoin.
+- `n_obs`: The number of observations.
+- `n_tissue_sections`: The number of tissue sections with default set up (can be overriden)!
+- `obs_unit`: The observational unit of the platform (cells, spots, beads, ...).
+
+## 2.2 Usage
+
+You can use `unique()` on each non numeric variable to obtain groups by which to filter the object.
+
+```{r eval = T, collapse = F}
+
+# load required packages
+library(SPATA2)
+library(SPATAData)
+library(dplyr)
+library(stringr)
+
+#assign the data.frame
+source_df <- sourceDataFrame()
+
+# get unique donor species types
+unique(source_df$donor_species)
+
+# get the different organs for which data exists
+unique(source_df$organ)
+
+# get additional specifications of anatomical location
+unique(source_df$organ_part)
+
+# get the different histo subclasses for which data exists
+unique(source_df$histo_class)
+
+```
+
+To filter the source data.frame use `dplyr::filter()` in combination with the logical tests that represent your idea of the data set you need. For instance, if you want all glioblastoma samples from the frontal and temporal lobe the code would look like this: 
+
+```{r eval = T}
+
+# filter for frontal and temporal glioblastoma
+filter(source_df, histo_class == "Glioblastoma" & organ_part %in% c("frontal", "temporal")) %>% 
+  select(sample_name, donor_id, histo_class, organ, organ_part, pub_citation, everything())
+
+```
+
+If you want samples from a specific publication: 
+
+```{r eval = T}
+
+# look for publications and journals with string subsetting
+filter(source_df, str_detect(pub_citation, pattern = "^Kuppe") & pub_journal == "Nature") %>% 
+  select(sample_name, pathology, organ, histo_class, histo_class_sub, pub_citation, pub_journal, everything())
+
+```
+
+The number of conditions is unlimited. You can even process the data.frame to filter for specific queries. E.g. if you want patient wise matching of samples. 
+
+```{r eval = T}
+
+# look for several samples from one single patient
+filter(source_df, !is.na(donor_id) & organ == "Cerebrum") %>% 
+  group_by(donor_id) %>% # count the Cerebrum samples by donor
+  mutate(ns_by_donor = n()) %>% 
+  filter(ns_by_donor > 1) %>% # keep only those samples with n > 1
+  arrange(donor_id)
+
+```
+
+# 3. Downloads
+
+Whether you get them by filtering the source data.frame or because you know them by name, to download `SPATA2` objects the sample names are required. There are two functions with which to download `SPATA2` object. 
+
+- `downloadSpataObject()`: To download single objects. They can be saved on disc automatically but this function is particularly equipped for quick downloads and assignment to a variable in your R session. 
+- `downloadSpataObjects()`: Takes a character vector of sample names, then downloads and stores them all together in the specified directory. 
+
+Note, that the downloaded objects are completely unprocessed. Hence, the plots you see above derive from raw counts. Refer to the vignettes on object creation and processing to find the pipeline you see fit for your data samples. 
+
+## 3.1 Download and assign
+
+This code chunk downloads single objects by sample name. It assigns the result to a variable in your global environment and you can immediately start with analysis and visualization.
+
+```{r echo = T, eval = F}
+
+# download objects by sample name and assign them to environment variables
+object_heart <- downloadSpataObject(sample_name = "ACH0010")
+object_gbm <- downloadSpataObject(sample_name = "UKF242T")
+
+# left plot
+plotSurface(object_heart, color_by = "HM_HYPOXIA")
+
+# right plot
+plotSurface(object_gbm, color_by = "GFAP", alpha_by = "GFAP")
+```
+
+```{r echo = F, eval = T}
+
+object_heart <- readRDS("data/object_heart.RDS")
+object_gbm <- readRDS("data/object_gbm.RDS")
+
+# left plot
+plotSurface(object_heart, color_by = "HM_HYPOXIA")
+
+# right plot
+plotSurface(object_gbm, color_by = "GFAP", alpha_by = "GFAP")
+
+```
+
+
+## 3.2 Download and saving on disk
+
+This code chunk uses filtering and `downloadSpataObjects()` to download a complete set into a single folder. 
+
+```{r echo = T, eval = F}
+
+# filter source data.frame
+healthy_human_cortex_samples <- 
+  filter(source_df, organ == "Cerebrum" & histo_class == "Cortex") %>% 
+  pull(sample_name)
+
+# show results
+healthy_human_cortex_samples
+
+# download samples
+downloadSpataObjects(
+  sample_names = healthy_human_cortex_samples, 
+  folder = "spata_objects/healthy_cortex" # create directory or adjust it
+  )
+
+```
+```{r echo = F, eval = T}
+
+# filter source data.frame
+healthy_human_cortex_samples <- 
+  filter(source_df, organ == "Cerebrum" & histo_class == "Cortex") %>% 
+  pull(sample_name)
+
+# show results
+healthy_human_cortex_samples
+
+```
+
+
+# 5. Sample meta data
+
+Meta data about the sample are stored in slot @@meta_sample. It is a list that can be extended flexibly with `addSampleMetaData()` We recommend, however, to stick to the naming suggested by our source data.frame. 
+
+```{r eval = T}
+
+getSampleMetaData(object_heart)
+
+```
+
+
+# 6. Source code & Sharing
+
+The `SPATA2` objects have been curated manually by us without any further processing. Data sets that derive from other publications have been acessessed as suggested in the respective data availability statement. `SPATA2` objects have been created in batches as can be tracked in the script /scripts/populate_spata2v3_objects.R in the main [repository](https://github.com/theMILOlab/SPATAData) of SPATAData. If you want to make your data set easily accessible for users via SPATAData please contact jan.kueckelhaus@uk-erlangen.de. 

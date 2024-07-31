@@ -191,7 +191,7 @@ checkSourceDataFrame <- function(source_df = sourceDataFrame(), ...){
 
 getCitation <- function(object, write_lines = TRUE){
   
-  sample_name <- getSampleName(object)
+  sample_name <- SPATA2::getSampleName(object)
   citation <- object@meta_sample$pub_citation
   
   if(!base::is.character(citation)){
@@ -457,7 +457,7 @@ load_data_file <- function(directory){
 #'   \item{**organ**}{: Character. Organ from which the sample was taken.}
 #'   \item{**organ_part**}{: Character. Specific part of the organ from which the sample was taken.}
 #'   \item{**pathology**}{: Character. Pathological state of the sample.}
-#'   \item{**platform**}{: Character. \link[=spatial_methods]{Platform} used for the experiment.}
+#'   \item{**platform**}{: Character. \code{\link[SPATA2:spatial_methods]{Platform}} used for the experiment.}
 #'   \item{**pub_citation**}{: Character. Citation for the publication related to the sample.}
 #'   \item{**pub_doi**}{: Character. DOI of the publication related to the sample.}
 #'   \item{**pub_journal**}{: Character. Journal where the related publication was published.}
@@ -479,13 +479,12 @@ load_data_file <- function(directory){
 #'   \item{**modality_metabolite**}{: Logical. Indicates if the modality includes metabolites.}
 #'   \item{**modality_protein**}{: Logical. Indicates if the modality includes proteins.}
 #'   \item{**n_obs**}{: Numeric. Number of observations.}
-#'   \item{**n_tissue_sections**}{: Numeric. Number of tissue sections as identified by [`identifyTissueOutline()`] with default parameters.}
+#'   \item{**n_tissue_sections**}{: Numeric. Number of tissue sections as identified by \code{\link[SPATA2:identifyTissueOutline]{identifyTissueOutline()}} with default parameters.}
 #'   \item{**obj_size**}{: Storage size of the object.}
 #'   \item{**obs_unit**}{: Character. Unit of observation.}
 #'   \item{**web_link**}{: Character. Weblinkg with which to download the `SPATA2` object.}
 #' }
-
-#' 
+#'
 #' @seealso [`downloadSpataObject()`], [`downloadSpataObjects()`] for easy download of 
 #' the filtering results.
 #' 
@@ -778,31 +777,6 @@ rgx_lookbehind <- function(pattern, negate = FALSE, match = ".*"){
 
 
 # s -----------------------------------------------------------------------
-
-#' @title Set citation info
-#'
-#' @description Sets information about how to cite this
-#' `SPATA2` object.
-#'
-#' @inherit getCitation params
-#' @param citation Character value containing the complete citation.
-#' 
-#' @details
-#' Input for `citation` is set in @@meta_sample$pub_citation.
-#' 
-#'
-#' @return The updated input object, containing the added, removed or computed results.
-#' @export
-#'
-setCitation <- function(object, citation){
-  
-  confuns::is_value(x = citation, mode = "character")
-  
-  object@information$citation <- citation
-  
-  return(object)
-  
-}
 
 
 #' @keywords internal

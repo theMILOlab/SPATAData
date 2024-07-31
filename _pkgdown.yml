@@ -1,0 +1,63 @@
+template:
+  params:
+    bootswatch: flatly
+
+home:
+ links:
+ - text: Visit us
+   href: https://themilolab.com/
+
+navbar:
+   structure:
+      left: [home, reference, citation, articles, news]
+   components:
+      citation:
+       text: Citation
+       href: articles/citation.html
+      newslog:
+       text: Newslog
+       href: articles/newslog.html
+      articles:
+       text: Articles
+       menu:
+       - text: Downloading data
+       - text: Quick downloads 
+         href: articles/download-quick.html
+       - text: Collection of datasets
+         href: articles/download-collections.html
+       - text: Raw source data
+         href: articles/download-raw-data.html
+       - text: The source data.frame
+       - text: Structure
+         href: source-df-structure.html
+       - text: Filtering
+         href: source-df-filtering.html
+
+reference:
+
+ - subtitle: Download
+   desc: These functions download SPATA2 objects as well as raw data set required for some tutorials of the SPATA2 package. 
+ - contents:
+   - starts_with("download")
+   
+ - subtitle: The data base
+   desc: The source data.frame contains information about all data sets available with SPATAData and allows convenient subsetting. 
+ - contents: 
+   - starts_with("sourceDataFrame")
+   - validSampleNames
+
+ - subtitle: Extraxt data
+   desc: These functions extract SPATAData related content of SPATA2 objects. 
+ - contents:
+   - matches("^get")
+   
+ - subtitle: Sample meta data
+   desc: These functions can be used to manage sample meta data. 
+ - contents: 
+   - contains("Meta")
+   
+ - subtitle: Miscellaneous functions
+ - contents: 
+   - WHOGrades
+
+ 

@@ -35,7 +35,7 @@ in a \code{SPATA2} object. The following meta variables provide additional infor
 \item{\strong{organ}}{: Character. Organ from which the sample was taken.}
 \item{\strong{organ_part}}{: Character. Specific part of the organ from which the sample was taken.}
 \item{\strong{pathology}}{: Character. Pathological state of the sample.}
-\item{\strong{platform}}{: Character. \link[=spatial_methods]{Platform} used for the experiment.}
+\item{\strong{platform}}{: Character. \code{\link[SPATA2:spatial_methods]{Platform}} used for the experiment.}
 \item{\strong{pub_citation}}{: Character. Citation for the publication related to the sample.}
 \item{\strong{pub_doi}}{: Character. DOI of the publication related to the sample.}
 \item{\strong{pub_journal}}{: Character. Journal where the related publication was published.}
@@ -57,7 +57,7 @@ Furthermore, there are quality control and file-specific meta variables:
 \item{\strong{modality_metabolite}}{: Logical. Indicates if the modality includes metabolites.}
 \item{\strong{modality_protein}}{: Logical. Indicates if the modality includes proteins.}
 \item{\strong{n_obs}}{: Numeric. Number of observations.}
-\item{\strong{n_tissue_sections}}{: Numeric. Number of tissue sections as identified by \code{\link[=identifyTissueOutline]{identifyTissueOutline()}} with default parameters.}
+\item{\strong{n_tissue_sections}}{: Numeric. Number of tissue sections as identified by \code{\link[SPATA2:identifyTissueOutline]{identifyTissueOutline()}} with default parameters.}
 \item{\strong{obj_size}}{: Storage size of the object.}
 \item{\strong{obs_unit}}{: Character. Unit of observation.}
 \item{\strong{web_link}}{: Character. Weblinkg with which to download the \code{SPATA2} object.}
