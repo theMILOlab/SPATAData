@@ -1,0 +1,12 @@
+pandoc: 3.1.11
+pkgdown: 2.1.0
+pkgdown_sha: ~
+articles:
+  citation: citation.html
+  download-collections: download-collections.html
+  download-quick: download-quick.html
+  download-raw-data: download-raw-data.html
+  newslog: newslog.html
+  source-df-filtering: source-df-filtering.html
+  source-df-structure: source-df-structure.html
+last_built: 2024-07-31T13:13Z

@@ -9,7 +9,7 @@ removeSampleManually(sample_name, update)
 \arguments{
 \item{sample_name}{The sample name(s) to be removed.}
 
-\item{update}{Logical. Use with caution! If TRUE, the updated output data.frame 
+\item{update}{Logical. Use with caution! If TRUE, the updated output data.frame
 will replace the current \code{source_df} of the package!}
 }
 \value{
@@ -21,3 +21,4 @@ Removes a sample from the \code{source_df} of the package.
 \details{
 As a precaution \code{udpate} must be manually set to TRUE.
 }
+\keyword{internal}

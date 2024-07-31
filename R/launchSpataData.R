@@ -2,7 +2,7 @@
 
 
 #' @title Interactive SPATAData
-#' @export
+#' @keywords internal
 #'
 launchSpataData <- function(){
   

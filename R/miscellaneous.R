@@ -11,6 +11,8 @@
 #' @param tags Character vector of tags.
 #' @inherit addSampleManually params return
 #' 
+#' @keywords internal
+#' 
 addSampleTagsManually <- function(source_df = sourceDataFrame(), 
                                   sample_name, 
                                   tags,
@@ -71,6 +73,8 @@ addSampleTagsManually <- function(source_df = sourceDataFrame(),
 #' to be adjusted. 
 #' @inherit addSampleManually params return
 #' 
+#' @keywords internal
+#' 
 #' @examples 
 #' 
 #'  # adjust image link
@@ -120,7 +124,7 @@ adjustSampleManually <- function(source_df = sourceDataFrame(),
   
 }
 
-
+#' @keywords internal
 adjustSourceDataFrame <- function(source_df = sourceDataFrame()){
   
   dplyr::mutate(
@@ -136,6 +140,7 @@ adjustSourceDataFrame <- function(source_df = sourceDataFrame()){
 
 # c -----------------------------------------------------------------------
 
+#' @keywords internal
 checkSourceDataFrame <- function(source_df = sourceDataFrame(), ...){
   
   chr_vars <- c(selectize_variables, text_variables, "tags")
@@ -173,51 +178,98 @@ checkSourceDataFrame <- function(source_df = sourceDataFrame(), ...){
 #' form of citation to give credits to the researchers who
 #' made this data available
 #'
-#' @inherit SPATA2::argument_dummy params
+#' @param object An object of class `SPATA2`.
+#' @param write_lines Logical. If `TRUE`, the string is printed in the
+#' console via `writeLines()`.
 #' @param sample_names Character vector of sample names for which
 #' you want to obtain the correct citation.
 #'
-#' @return Citation in form of character vectors or a list of such.
+#' @return Citation and - if one of SPATAData objects - the download source.
 #'
 #' @export
 #'
 
-getCitation <- function(object){
+getCitation <- function(object, write_lines = TRUE){
   
-  citation <- object@information$citation
+  sample_name <- SPATA2::getSampleName(object)
+  citation <- object@meta_sample$pub_citation
   
   if(!base::is.character(citation)){
     
-    warning("No citation found. Returning NULL.")
+    warning("No valid citation found. Returning NULL.")
     
     citation <- NULL
     
+    return(citation)
+    
+  } else {
+    
+    citation <- stringr::str_c("Citation: ", citation)
+    
   }
   
-  return(citation)
+  if(sample_name %in% source_df$sample_name){
+    
+    source <- 
+      dplyr::filter(source_df, sample_name == {{sample_name}}) %>% 
+      dplyr::pull(source) %>% 
+      stringr::str_replace_all(pattern = "_", replacement = " ") %>% 
+      stringr::str_c("\nSource: ", .)
+    
+    citation <- stringr::str_c(citation, source)
+    
+  }
+  
+  if(base::isTRUE(write_lines)){
+    
+    writeLines(citation)
+    
+  } else {
+    
+    return(citation)
+    
+  }
   
 }
 
 #' @rdname getCitation
 #' @export
-getCitationBySample <- function(sample_names = validSampleNames()){
+getCitationBySample <- function(sample_names){
   
   confuns::check_one_of(
     input = sample_names,
     against = validSampleNames()
   )
   
-  purrr::map(
+  purrr::walk(
     .x = sample_names,
-    .f = function(sample){
+    .f = function(sample_name){
       
-      dplyr::filter(sourceDataFrame(), sample == {{sample}}) %>%
-        dplyr::pull(citation) %>%
-        base::unique()
+      citation <- 
+        dplyr::filter(source_df, sample_name == {{sample_name}}) %>% 
+        dplyr::pull(pub_citation)
       
-    }
-  ) %>%
-    purrr::set_names(nm = sample_names)
+      citation <- stringr::str_c("\nCitation: ", citation)
+      
+      citation <- stringr::str_c("Sample: ", sample_name, citation)
+      
+      source <- 
+        dplyr::filter(source_df, sample_name == {{sample_name}}) %>% 
+        dplyr::pull("source") %>% 
+        stringr::str_replace_all(pattern = "_", replacement = " ") %>% 
+        stringr::str_c("\nSource: ", .)
+      
+      citation <- stringr::str_c(citation, source)
+      
+      if(length(sample_names) > 1){
+        
+        citation <- stringr::str_c(citation, "\n-------------------------")
+        
+      }
+      
+      writeLines(citation)
+      
+  }) 
   
 }
 
@@ -225,6 +277,7 @@ getCitationBySample <- function(sample_names = validSampleNames()){
 
 # i -----------------------------------------------------------------------
 
+#' @keywords internal
 is_creatable <- function(file){
   
   base::tryCatch({
@@ -248,7 +301,7 @@ is_creatable <- function(file){
 
 # p -----------------------------------------------------------------------
 
-
+#' @keywords internal
 plotSampleImage <- function(sample_name, which = "lowres"){
   
   if(FALSE){
@@ -322,7 +375,7 @@ plotSampleImage <- function(sample_name, which = "lowres"){
 
 
 
-
+#' @keywords internal
 load_data_file <- function(directory){
   
   if(stringr::str_detect(string = directory, pattern = ".csv$")){
@@ -376,42 +429,163 @@ load_data_file <- function(directory){
 
 
 
-
-#' @title Obtain the SPATAData \code{source_df}
+#' @title SPATAData source data.frame
+#'
+#' @description Access the source data.frame which contains information about 
+#' various spatial transcriptomic experiments. Use `...` to subset according
+#' to [`dplyr::filter()`].
 #' 
-#' @description Returns the \code{source_df} and allows some filtering.
+#' @inherit dplyr::filter params
+#' @param .rm_na_cols Logical value. Decides whether columns of the output data.frame
+#' that contain only missing values are removed. Defaults to `TRUE` if `...`
+#' contains any subset instructions. Else, defaults to `FALSE`. Specifying the input
+#' forces the respective behaviour.
+#' 
+#' @return Data.frame in which each row corresponds to a spatial data set stored
+#' in a `SPATA2` object. The following meta variables provide additional information. 
+#'  
+#' \itemize{
+#'   \item{**sample_name**}{: Character. Name of the sample and its unique identifier.}
+#'   \item{**comment**}{: Character. Additional comments about the sample.}
+#'   \item{**donor_id**}{: Character. Unique identifier for the donor.}
+#'   \item{**donor_species**}{: Character. Species of the donor.}
+#'   \item{**grade**}{: Character. Grade of the sample.}
+#'   \item{**grade_sub**}{: Character. Sub-grade of the sample.}
+#'   \item{**histo_class**}{: Character. Histological classification.}
+#'   \item{**histo_class_sub**}{: Character. Sub-classification of the histological class.}
+#'   \item{**institution**}{: Character. Institution where the sample was collected.}
+#'   \item{**organ**}{: Character. Organ from which the sample was taken.}
+#'   \item{**organ_part**}{: Character. Specific part of the organ from which the sample was taken.}
+#'   \item{**pathology**}{: Character. Pathological state of the sample.}
+#'   \item{**platform**}{: Character. \code{\link[SPATA2:spatial_methods]{Platform}} used for the experiment.}
+#'   \item{**pub_citation**}{: Character. Citation for the publication related to the sample.}
+#'   \item{**pub_doi**}{: Character. DOI of the publication related to the sample.}
+#'   \item{**pub_journal**}{: Character. Journal where the related publication was published.}
+#'   \item{**pub_year**}{: Numeric. Year of publication.}
+#'   \item{**sex**}{: Character. Sex of the donor.}
+#'   \item{**side**}{: Character. Side of the organ from which the sample was taken.}
+#'   \item{**tags**}{: Character. Tags related to the sample.}
+#'   \item{**tissue_age**}{: Numeric. Age of the tissue in years.}
+#'   \item{**workgroup**}{: Character. Workgroup or team responsible for the sample.}
+#' }
+#' 
+#' Furthermore, there are quality control and file-specific meta variables: 
+#' 
+#' \itemize{
+#'   \item{**lm_source**}{: Date-time. Last instance when the corresponding `SPATA2` object was modified.}
+#'   \item{**mean_counts**}{: Numeric. Mean counts of the measurements.}
+#'   \item{**median_counts**}{: Numeric. Median counts of the measurements.}
+#'   \item{**modality_gene**}{: Logical. Indicates if the modality includes genes.}
+#'   \item{**modality_metabolite**}{: Logical. Indicates if the modality includes metabolites.}
+#'   \item{**modality_protein**}{: Logical. Indicates if the modality includes proteins.}
+#'   \item{**n_obs**}{: Numeric. Number of observations.}
+#'   \item{**n_tissue_sections**}{: Numeric. Number of tissue sections as identified by \code{\link[SPATA2:identifyTissueOutline]{identifyTissueOutline()}} with default parameters.}
+#'   \item{**obj_size**}{: Storage size of the object.}
+#'   \item{**obs_unit**}{: Character. Unit of observation.}
+#'   \item{**web_link**}{: Character. Weblinkg with which to download the `SPATA2` object.}
+#' }
 #'
-#' @param organ Character value. Filter for organs.
-#' @param status Character value. Filter for tissue status. \emph{'p'} equals
-#' pathological. \emph{'h'} equals healthy. 
+#' @seealso [`downloadSpataObject()`], [`downloadSpataObjects()`] for easy download of 
+#' the filtering results.
+#' 
+#' @examples
+#' 
+#' library(SPATA2)
+#' library(SPATAData)
+#' library(dplyr)
+#' library(stringr)
+#' 
+#' sdf <- sourceDataFrame()
+#' 
+#' #----- example dplyr logic to filter the source data.frame
+#' 
+#' # 1. obtain glioblastoma samples from the temporal lobe
+#' 
+#' temporal_gbms <- sourceDataFrame(histo_class == "Glioblastoma" & organ_part == "temporal")
+#' 
+#' # show results
+#' temporal_gbms
+#' 
+#' # get sample names
+#' temporal_gbms$sample_names
+#' 
+#' # downlaod as collection
+#' downloadSpataObjects(sample_names = gbm_samples, folder = "spata_objects/gbm") 
+#' 
+#' # 2. obtain data from specific publications
+#' 
+#' sdf_kuppe <- 
+#'  sourceDataFrame(str_detect(pub_citation, pattern = "^Kuppe"))
+#'  
+#' kuppe_samples <- sdf_kuppe$sample_name
+#' 
+#' print(kuppe_samples)  
 #'
-#' @return Data.frame.
+#' @export
 #'
-sourceDataFrame <- function(organ = NULL, status = NULL, sample = NULL){
+
+sourceDataFrame <- function(..., .rm_na_cols = NULL) {
   
-  df <- SPATAData::source_df
+  filter_expr <- rlang::enquos(...)
   
-  if(base::is.character(organ)){
+  if(base::is.null(.rm_na_cols) & !purrr::is_empty(filter_expr)){
     
-    df <- dplyr::filter(df, organ %in% {{organ}})
+    .rm_na_cols <- TRUE
     
   }
   
-  if(base::is.character(status)){
+  out_df <- dplyr::filter(source_df, !!!filter_expr)
+  
+  if(base::isTRUE(.rm_na_cols)) {
     
-    df <- dplyr::filter(df, status %in% {{status}})
+    out_df <- purrr::discard(out_df, .p = ~ base::all(base::is.na(.x)))
     
   }
   
-  if(base::is.character(sample)){
-    
-    df <- dplyr::filter(df, sample %in% {{sample}})
-    
-  }
-  
-  return(df)
-  
+  return(out_df)
 }
+
+      
+#' @export                    
+general_meta_vars <- c(
+  "sample_name",
+  "comment",
+  "donor_id",
+  "donor_species",
+  "grade",
+  "grade_sub",
+  "histo_class",
+  "histo_class_sub",
+  "institution",
+  "organ",
+  "organ_part",
+  "pathology",
+  "platform",
+  "pub_citation",
+  "pub_doi",
+  "pub_journal",
+  "pub_year",
+  "sex",
+  "side",
+  "tags",
+  "tissue_age",
+  "workgroup"
+)
+
+#' @export
+qc_meta_vars <- c(
+  "lm_source",
+  "mean_counts",
+  "median_counts",
+  "modality_gene",
+  "modality_metabolite",
+  "modality_protein",
+  "n_obs",
+  "n_tissue_sections",
+  "obj_size",
+  "obs_unit",
+  "web_link"
+)
 
 
 
@@ -436,7 +610,7 @@ sourceDataFrameTags <- function(source_df = sourceDataFrame(), sample_name = NUL
     
   }
   
-  stringr::str_split(source_df$tags, pattern = "\\|") %>% 
+  stringr::str_split(source_df$tags, pattern = "\\;") %>% 
     purrr::flatten_chr() %>% 
     base::unique()
   
@@ -469,6 +643,7 @@ sampleTags <- function(source_df = sourceDataFrame(), sample_name){
 }
 
 
+#' @keywords internal
 filterSamples <- function(source_df = sourceDataFrame(), input, organ, status, all){
   
   test <- base::ifelse(test = base::isTRUE(all), yes = "all", no = "any")
@@ -603,29 +778,8 @@ rgx_lookbehind <- function(pattern, negate = FALSE, match = ".*"){
 
 # s -----------------------------------------------------------------------
 
-#' @title Set citation info
-#'
-#' @description Sets information about how to cite this
-#' spata object.
-#'
-#' @inherit SPATA2::argument_dummy params
-#' @param citation Character value.
-#'
-#' @return An updated spata object.
-#' @export
-#'
-setCitation <- function(object, citation){
-  
-  confuns::is_value(x = citation, mode = "character")
-  
-  object@information$citation <- citation
-  
-  return(object)
-  
-}
 
-
-
+#' @keywords internal
 #' @export
 str_extract_before <- function(string,
                                pattern,
@@ -656,6 +810,7 @@ str_extract_before <- function(string,
   
 }
 
+#' @keywords internal
 #' @export
 str_extract_after <- function(string,
                               pattern,
@@ -694,21 +849,14 @@ str_extract_after <- function(string,
 #' @title Valid sample names
 #'
 #' @description Returns the sample names of the samples that you can download
-#' via \code{downloadSpataObject()}, \code{downloadSpataObject()}, 
-#' \code{downloadRawData()}.
-#' 
-#' @param type Character value. If \emph{'SPATA'} returns valid input
-#' options when it comes to download spata objects. If \emph{'RAW'}
-#' returns valid input options when it comes to download 
-#' whole raw 10X Visium data sets.
+#' via \code{downloadSpataObject()}, \code{downloadSpataObject(()}.
 #'
 #' @return Character vector.
 #' @export
 #'
 validSampleNames <- function(){
   
-  dplyr::pull(SPATAData::source_df, sample) %>% 
-    base::unique()
+  sourceDataFrame()$sample_name
   
 }
 

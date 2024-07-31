@@ -12,7 +12,7 @@ of the package.}
 
 \item{tags}{Character vector of tags.}
 
-\item{update}{Logical. Use with caution! If TRUE, the updated output data.frame 
+\item{update}{Logical. Use with caution! If TRUE, the updated output data.frame
 will replace the current \code{source_df} of the package!}
 }
 \value{
@@ -21,3 +21,4 @@ The updated data.frame is returned invisibly.
 \description{
 Adds tags to a sample.
 }
+\keyword{internal}

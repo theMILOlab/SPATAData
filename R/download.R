@@ -1,54 +1,119 @@
 
+adjust_gdrive_link <- function(initial_url){
+  
+  initial_response <- httr::GET(initial_url)
+  
+  if(httr::status_code(initial_response) == 200){
+    
+    html_content <- httr::content(initial_response, as = "text")
+    
+    html_page <- rvest::read_html(html_content)
+    
+    form_action <- 
+      rvest::html_node(html_page, "form#download-form") %>%
+      rvest::html_attr("action")
+    
+    params <-
+      rvest::html_nodes(html_page, "form#download-form input[type='hidden']") %>%
+      rvest::html_attrs()
+    
+    query_params <- list()
+    
+    for(param in params) {
+      
+      query_params[[param["name"]]] <- param["value"]
+      
+    }
+    
+    final_download_url <- httr::modify_url(form_action, query = query_params)
+    
+    return(final_download_url)
+    
+  } else {
+    
+    stop(glue::glue("Unable to download SPATA2 object directy. Pleaes enter this weblink directly in the browser and download manually: {initial_url}"))
+    
+  }
+  
+}
 
 
 
-#' @title Download spata objects
+#' @title Download a SPATA2 object
 #'
-#' @description Downloads a spata object and returns it. For convenient
-#' downloads of multiple spata objects check out \code{downloadSpataObjects()}. 
+#' @description Downloads a single `SPATA2` object and returns it. 
 #'
 #' @param sample_name Character value. The name of the sample you want to
 #' download. Use \code{validSampleNames()} to obtain all valid input options.
-#' @param overwrite Logical. Must be set to TRUE if file directories
-#' under which downloaded files are about to be saved already exist.
+#' @param file If you want to save the object on disc:
+#' The filename of the `SPATA2` object. Must end with \emph{'.RDS'} if provided
+#' as a character. If `NULL`, the function saves the object 
+#' under the sample name with an *'.RDS'* suffix. If `FALSE`, the saving 
+#' is skipped and the object is simply returned.
 #' @param folder Character value. If character, specifies the output
-#' folder in which the spata object is saved. Defaults to the working directory.
-#' @param file The filename of the spata object. Must end with \emph{'.RDS'}. By
-#' default the file it is `NULL` which makes the function skip the saving step.
-#' Set to character, if you want the object to be saved.
+#' folder in which the `SPATA2` object is saved. Defaults to the working directory.
+#' @param overwrite Logical. Must be set to `TRUE` if file directories
+#' under which downloaded files are to be saved already exist.
+#' @param adjust_link Logical value. Defaults to `TRUE`. Allows the function to adjust the link
+#' if the download fails due to Google Drive warnings. See section below
+#' for more information. 
+#' @inherit argument_dummy params
 #'
-#' @inherit SPATA2::argument_dummy params
+#' @details If `file` is not `FALSE`. The downloaded `SPATA2` object is immediately saved after the download before
+#' it is returned by the function. Note that the file directory is assembled by combining
+#' `folder` and `file`!
 #'
-#' @details The downloaded spata object is immediately saved after the download before
-#' it is returned by the function.
-#'
-#' @return The downloaded spata object.
+#' @return The downloaded `SPATA2` object.
+#' 
+#' @seealso For convenient downloads of multiple `SPATA2` objects 
+#' check out [`downloadSpataObjects()`].
+#' 
 #' @export
+#' 
+#' @section Google Drive Warning:
+#' `SPATA2` objects are stored in a Google Drive repository and downloaded via their weblink as 
+#' stored in the \link[=sourceDataFrame]{source data.frame}. Often, `SPATA2` objects are too 
+#' large for the automatic Google Drive virus scan. As a result, the weblink initially leads 
+#' to a webpage that asks if you are okay with skipping this virus scan.
+#' 
+#' In cases where the Google Drive link leads to this warning page, the function
+#' will automatically adjust the download link to bypass the warning and attempt
+#' the download again. If the adjusted download still fails, an error message is 
+#' displayed, prompting the user to manually download the file using the provided link.
+#' 
+#' Since the virus scan cannot be performed by Google Drive regardless of whether 
+#' you download it from within R or manually, the function defaults to bypass this
+#' warning automatically. If you prefer not to bypass the warning, you can set `adjust_link = FALSE`
+#' In this case, the function will give a warning and ask you to download the object manually.
+#' 
+#' The downloaded objects do not contain viruses. The way they have been created,
+#' uploaded as well as how the web links are added to the \link[=sourceDataFrame]{source data.frame} 
+#' can be reconstructed with the *populate_<location>* scripts provided on 
+#' the [SPATAData repository](https://github.com/theMILOlab/SPATAData) on github under */scripts/*.
 #'
 #' @examples
 #'
-#' # only download
-#' downloadSpataObject(sample_name = "275_T", folder = getwd())
+#' # download & assign (no saving on the disk)
+#' object <- downloadSpataObject(sample_name = "UKF275T")
 #'
-#' # download AND assign
-#' object <- downloadSpataObject(sample_name = "275_T", folder = getwd())
+#' # download, assign and save on disk
+#' # -> stores the file under ~/UKF275T.RDS (where '~' is your working directory)
+#' object <- downloadSpataObject(sample_name = "UKF275T", file = TRUE)
 #' 
-#' # only assign (default)
-#' object <- downloadSpataObject(sample_name = "275_T", file = NULL)
-#'
+#' # download, assign and save on disk in a specified directory
+#' object <- downloadSpataObject(sample_name = "UKF275T", file = "my/path/to/spata_object.RDS")
 #'
 downloadSpataObject <- function(sample_name,
                                 overwrite = FALSE,
-                                folder = base::getwd(),
-                                file = NULL,
-                                in_shiny = FALSE,
+                                file = FALSE,
+                                adjust_link = TRUE,
                                 verbose = TRUE,
                                 ...){
 
-  confuns::are_values(c("folder", "file"), mode = "character", skip.allow = TRUE, skip.val = NULL)
-
   confuns::is_value(x = overwrite, mode = "logical")
 
+  in_shiny <- base::isTRUE(list(...)[["in_shiny"]])
+  
   source_df <- list(...)[["source_df"]]
 
   if(base::is.null(source_df)){
@@ -59,17 +124,19 @@ downloadSpataObject <- function(sample_name,
 
   confuns::check_one_of(
     input = sample_name,
-    against = base::unique(source_df$sample)
+    against = base::unique(source_df$sample_name), 
+    fdb.opt = 2, 
+    ref.opt.2 = "SPATAData sample names"
   )
 
   download_dir <-
-    dplyr::filter(source_df, sample == {{sample_name}}) %>%
-    dplyr::pull(link_spata)
+    dplyr::filter(source_df, sample_name == {{sample_name}}) %>%
+    dplyr::pull(web_link)
   
   if(!shiny::isTruthy(download_dir)){
     
     confuns::give_feedback(
-      msg = glue::glue("Could not find valid link to spata object for sample {sample_name}."), 
+      msg = glue::glue("Could not find valid link to `SPATA2` object for sample {sample_name}."), 
       fdb.fn = "stop", 
       in.shiny = in_shiny
     )
@@ -84,7 +151,7 @@ downloadSpataObject <- function(sample_name,
 
     }
 
-    directory_spata <- stringr::str_c(folder, "/", file)
+    directory_spata <- file
 
     if(base::file.exists(directory_spata)){
 
@@ -126,15 +193,60 @@ downloadSpataObject <- function(sample_name,
   }
 
   confuns::give_feedback(
-    msg = glue::glue("Downloading spata object '{sample_name}' from '{download_dir}'."),
+    msg = glue::glue("Downloading `SPATA2` object '{sample_name}' from '{download_dir}'."),
     verbose = verbose, 
     in.shiny = in_shiny
     )
 
-  downloaded_object <-
-    base::url(download_dir) %>%
-    base::readRDS()
-
+  # download the object
+  downloaded_object <- 
+    base::tryCatch({
+      
+      base::url(download_dir) %>%
+        base::readRDS()
+      
+    }, error = function(error){
+      
+      FALSE
+      
+    })
+  
+  # adjust directory to circumvent warning page of googledrive which mentions
+  # that virusscan is not possible
+  if(base::isFALSE(downloaded_object) & base::isTRUE(adjust_link)){
+    
+    confuns::give_feedback(
+      msg = "Adjusting weblink for download.", 
+      verbose = verbose
+    )
+    
+    download_dir_adj <- adjust_gdrive_link(download_dir)
+    
+    confuns::give_feedback(
+      msg = glue::glue("Trying: {download_dir_adj}."), 
+      verbose = verbose
+    )
+    
+    downloaded_object <- 
+      base::tryCatch({
+        
+        base::url(download_dir_adj) %>%
+          base::readRDS()
+        
+      }, error = function(error){
+        
+        FALSE
+        
+      })
+    
+  }
+  
+  if(base::isFALSE(downloaded_object)){
+    
+    stop(glue::glue("Unable to download SPATA2 object directy. Pleaes enter this weblink directly in the browser and download manually: {initial_url}"))
+    
+  }
+  
   confuns::give_feedback(
     msg = "Download successful.",
     verbose = verbose
@@ -146,24 +258,12 @@ downloadSpataObject <- function(sample_name,
     
   }
 
-  citation <-
-    dplyr::filter(source_df, sample == {{sample_name}}) %>%
-    dplyr::pull(citation) %>%
-    base::unique()
-
-  downloaded_object <- setCitation(downloaded_object, citation = citation)
-
   if(base::is.character(file)){
 
-    downloaded_object <-
-      SPATA2::adjustDirectoryInstructions(
-        object = downloaded_object,
-        to = "spata_object",
-        directory_new = directory_spata
-      )
+    downloaded_object <- SPATA2::setSpataDir(downloaded_object, dir = file)
 
     confuns::give_feedback(
-      msg = glue::glue("Saving spata object under '{directory_spata}'."),
+      msg = glue::glue("Saving `SPATA2` object under '{directory_spata}'."),
       verbose = verbose
     )
 
@@ -176,43 +276,64 @@ downloadSpataObject <- function(sample_name,
 }
 
 
-#' @title Download several spata objects
+#' @title Download and save several SPATA2 objects
 #'
-#' @description Main function that downloads several spata objects
+#' @description Main function that downloads several `SPATA2` objects
 #' at the same time and saves each as an .RDS file.
 #'
-#' @param sample_names Character vector. The sample names of the spata objects
+#' @param sample_names Character vector. The sample names of the `SPATA2` objects
 #' to be downloaded. Use \code{validSampleNames()} to obtain all valid input options.
 #' @param files Character vector or NULL. Specifies the file names under which the
-#' spata objects are saved. If character, the input must be of the same length
+#' `SPATA2` objects are saved. If character, the input must be of the same length
 #' as the input for argument \code{sample_names}. If NULL, the files are named
 #' according to the sample name.
-#' @inherit downloadSpataObject params
+#' @inherit downloadSpataObject params 
 #'
-#' @return An invisible TRUE if everything worked flawlessly. 
+#' @return An invisible `TRUE`.
+#'
+#' @section Google Drive Warning:
+#' `SPATA2` objects are stored in a Google Drive repository and downloaded via their weblink as 
+#' stored in the \link[=sourceDataFrame]{source data.frame}. Often, `SPATA2` objects are too 
+#' large for the automatic Google Drive virus scan. As a result, the weblink initially leads 
+#' to a webpage that asks if you are okay with skipping this virus scan.
+#' 
+#' In cases where the Google Drive link leads to this warning page, the function
+#' will automatically adjust the download link to bypass the warning and attempt
+#' the download again. If the adjusted download still fails, an error message is 
+#' displayed, prompting the user to manually download the file using the provided link.
+#' 
+#' Since the virus scan cannot be performed by Google Drive regardless of whether 
+#' you download it from within R or manually, the function defaults to bypass this
+#' warning automatically. If you prefer not to bypass the warning, you can set `adjust_link = FALSE`
+#' In this case, the function will give a warning and ask you to download the object manually.
+#' 
+#' The downloaded objects do not contain viruses. The way they have been created,
+#' uploaded as well as how the web links are added to the \link[=sourceDataFrame]{source data.frame} 
+#' can be reconstructed with the *populate_<location>* scripts provided on 
+#' the [SPATAData repository](https://github.com/theMILOlab/SPATAData) on github under */scripts/*.
 #'
 #' @export
 #'
 #' @examples
 #'
-#' # downloads three spata objects and
-#' # stores them as "spata_data/275_T.RDS", "spata_data/313_T.RDS" etc.
+#' # downloads three objects and
+#' # saves them as "spata_objects/UKF275T.RDS", "spata_objects/UKF313t.RDS", ... etc.
 #' 
 #'   downloadSpataObjects(
-#'     sample_names = ("275_T", "313_T", "334_T"),
-#'     folder = "spata_data"
+#'     sample_names = c("UKF275T", "UKF313T", "UKF334T"),
+#'     folder = "spata_objects" # the folder in which to save the files
 #'    )
 #'
 downloadSpataObjects <- function(sample_names,
                                  files = NULL,
                                  folder = base::getwd(),
                                  overwrite = FALSE,
-                                 in_shiny = FALSE,
+                                 adjust_link = TRUE,
                                  verbose = TRUE,
                                  ...){
 
-  confuns::is_value(x = folder, mode = "character", skip.allow = TRUE, skip.val = NULL)
-
+  in_shiny <- base::isTRUE(list(...)[["in_shiny"]])
+  
   source_df <- list(...)[["source_df"]]
 
   if(base::is.null(source_df)){
@@ -233,7 +354,7 @@ downloadSpataObjects <- function(sample_names,
 
   confuns::check_one_of(
     input = sample_names,
-    against = base::unique(source_df$sample)
+    against = base::unique(source_df$sample_name)
   )
   
   if(!base::dir.exists(folder)){
@@ -295,36 +416,16 @@ downloadSpataObjects <- function(sample_names,
       .x = sample_names,
       .y = files,
       .f = purrr::safely(
-        .f = function(sample, file){
+        .f = function(sample_name, file){
 
-          download_dir <-
-            dplyr::filter(source_df, sample == {{sample}}) %>%
-            dplyr::pull(link_spata)
-
-          citation <-
-            dplyr::filter(source_df, sample == {{sample}}) %>%
-            dplyr::pull(citation) 
-
-          confuns::give_feedback(
-            msg = glue::glue("Downloading sample {sample} from '{download_dir}'."),
-            verbose = verbose,
-            in.shiny = in_shiny
+          object <- 
+            downloadSpataObject(
+              sample_name = sample_name, 
+              adjust_link = adjust_link
             )
-
-          # download and save immediately
-          base::url(download_dir) %>%
-            base::readRDS() %>%
-            {if(base::isTRUE(update)){
-
-              SPATA2::updateSpataObject(., verbose = verbose)
-
-            } else {
-
-              .
-
-            }} %>%
-            setCitation(object = ., citation = citation) %>%
-            saveSpataObject(directory_spata = file, verbose = verbose)
+          
+          object <- 
+            saveSpataObject(object = object, dir = file, verbose = verbose)
 
           return(TRUE)
 
@@ -505,10 +606,6 @@ downloadRawData <- function(sample_names,
   base::invisible(TRUE)
 
 }
-
-
-
-
 
 
 

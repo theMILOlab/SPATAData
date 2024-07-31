@@ -2,14 +2,13 @@
 % Please edit documentation in R/download.R
 \name{downloadSpataObject}
 \alias{downloadSpataObject}
-\title{Download spata objects}
+\title{Download a SPATA2 object}
 \usage{
 downloadSpataObject(
   sample_name,
   overwrite = FALSE,
-  folder = base::getwd(),
-  file = NULL,
-  in_shiny = FALSE,
+  file = FALSE,
+  adjust_link = TRUE,
   verbose = TRUE,
   ...
 )
@@ -18,44 +17,75 @@ downloadSpataObject(
 \item{sample_name}{Character value. The name of the sample you want to
 download. Use \code{validSampleNames()} to obtain all valid input options.}
 
-\item{overwrite}{Logical. Must be set to TRUE if file directories
-under which downloaded files are about to be saved already exist.}
+\item{overwrite}{Logical. Must be set to \code{TRUE} if file directories
+under which downloaded files are to be saved already exist.}
 
-\item{folder}{Character value. If character, specifies the output
-folder in which the spata object is saved. Defaults to the working directory.}
+\item{file}{If you want to save the object on disc:
+The filename of the \code{SPATA2} object. Must end with \emph{'.RDS'} if provided
+as a character. If \code{NULL}, the function saves the object
+under the sample name with an \emph{'.RDS'} suffix. If \code{FALSE}, the saving
+is skipped and the object is simply returned.}
 
-\item{file}{The filename of the spata object. Must end with \emph{'.RDS'}. By
-default the file it is `NULL` which makes the function skip the saving step.
-Set to character, if you want the object to be saved.}
+\item{adjust_link}{Logical value. Defaults to \code{TRUE}. Allows the function to adjust the link
+if the download fails due to Google Drive warnings. See section below
+for more information.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
 
-\item{...}{Used to absorb deprecated arguments or functions.}
+\item{folder}{Character value. If character, specifies the output
+folder in which the \code{SPATA2} object is saved. Defaults to the working directory.}
 }
 \value{
-The downloaded spata object.
+The downloaded \code{SPATA2} object.
 }
 \description{
-Downloads a spata object and returns it. For convenient
-downloads of multiple spata objects check out \code{downloadSpataObjects()}.
+Downloads a single \code{SPATA2} object and returns it.
 }
 \details{
-The downloaded spata object is immediately saved after the download before
-it is returned by the function.
+If \code{file} is not \code{FALSE}. The downloaded \code{SPATA2} object is immediately saved after the download before
+it is returned by the function. Note that the file directory is assembled by combining
+\code{folder} and \code{file}!
 }
+\section{Google Drive Warning}{
+
+\code{SPATA2} objects are stored in a Google Drive repository and downloaded via their weblink as
+stored in the \link[=sourceDataFrame]{source data.frame}. Often, \code{SPATA2} objects are too
+large for the automatic Google Drive virus scan. As a result, the weblink initially leads
+to a webpage that asks if you are okay with skipping this virus scan.
+
+In cases where the Google Drive link leads to this warning page, the function
+will automatically adjust the download link to bypass the warning and attempt
+the download again. If the adjusted download still fails, an error message is
+displayed, prompting the user to manually download the file using the provided link.
+
+Since the virus scan cannot be performed by Google Drive regardless of whether
+you download it from within R or manually, the function defaults to bypass this
+warning automatically. If you prefer not to bypass the warning, you can set \code{adjust_link = FALSE}
+In this case, the function will give a warning and ask you to download the object manually.
+
+The downloaded objects do not contain viruses. The way they have been created,
+uploaded as well as how the web links are added to the \link[=sourceDataFrame]{source data.frame}
+can be reconstructed with the \emph{populate_\if{html}{\out{<location>}}} scripts provided on
+the \href{https://github.com/theMILOlab/SPATAData}{SPATAData repository} on github under \emph{/scripts/}.
+}
+
 \examples{
 
-# only download
-downloadSpataObject(sample_name = "275_T", folder = getwd())
+# download & assign (no saving on the disk)
+object <- downloadSpataObject(sample_name = "UKF275T")
 
-# download AND assign
-object <- downloadSpataObject(sample_name = "275_T", folder = getwd())
+# download, assign and save on disk
+# -> stores the file under ~/UKF275T.RDS (where '~' is your working directory)
+object <- downloadSpataObject(sample_name = "UKF275T", file = TRUE)
 
-# only assign (default)
-object <- downloadSpataObject(sample_name = "275_T", file = NULL)
+# download, assign and save on disk in a specified directory
+object <- downloadSpataObject(sample_name = "UKF275T", file = "my/path/to/spata_object.RDS")
 
-
+}
+\seealso{
+For convenient downloads of multiple \code{SPATA2} objects
+check out \code{\link[=downloadSpataObjects]{downloadSpataObjects()}}.
 }

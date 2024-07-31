@@ -2,55 +2,80 @@
 % Please edit documentation in R/download.R
 \name{downloadSpataObjects}
 \alias{downloadSpataObjects}
-\title{Download several spata objects}
+\title{Download and save several SPATA2 objects}
 \usage{
 downloadSpataObjects(
   sample_names,
   files = NULL,
   folder = base::getwd(),
   overwrite = FALSE,
-  in_shiny = FALSE,
+  adjust_link = TRUE,
   verbose = TRUE,
   ...
 )
 }
 \arguments{
-\item{sample_names}{Character vector. The sample names of the spata objects
+\item{sample_names}{Character vector. The sample names of the \code{SPATA2} objects
 to be downloaded. Use \code{validSampleNames()} to obtain all valid input options.}
 
 \item{files}{Character vector or NULL. Specifies the file names under which the
-spata objects are saved. If character, the input must be of the same length
+\code{SPATA2} objects are saved. If character, the input must be of the same length
 as the input for argument \code{sample_names}. If NULL, the files are named
 according to the sample name.}
 
 \item{folder}{Character value. If character, specifies the output
-folder in which the spata object is saved. Defaults to the working directory.}
+folder in which the \code{SPATA2} object is saved. Defaults to the working directory.}
 
-\item{overwrite}{Logical. Must be set to TRUE if file directories
-under which downloaded files are about to be saved already exist.}
+\item{overwrite}{Logical. Must be set to \code{TRUE} if file directories
+under which downloaded files are to be saved already exist.}
+
+\item{adjust_link}{Logical value. Defaults to \code{TRUE}. Allows the function to adjust the link
+if the download fails due to Google Drive warnings. See section below
+for more information.}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.
 
 (Warning messages will always be printed.)}
-
-\item{...}{Used to absorb deprecated arguments or functions.}
 }
 \value{
-An invisible TRUE if everything worked flawlessly.
+An invisible \code{TRUE}.
 }
 \description{
-Main function that downloads several spata objects
+Main function that downloads several \code{SPATA2} objects
 at the same time and saves each as an .RDS file.
 }
+\section{Google Drive Warning}{
+
+\code{SPATA2} objects are stored in a Google Drive repository and downloaded via their weblink as
+stored in the \link[=sourceDataFrame]{source data.frame}. Often, \code{SPATA2} objects are too
+large for the automatic Google Drive virus scan. As a result, the weblink initially leads
+to a webpage that asks if you are okay with skipping this virus scan.
+
+In cases where the Google Drive link leads to this warning page, the function
+will automatically adjust the download link to bypass the warning and attempt
+the download again. If the adjusted download still fails, an error message is
+displayed, prompting the user to manually download the file using the provided link.
+
+Since the virus scan cannot be performed by Google Drive regardless of whether
+you download it from within R or manually, the function defaults to bypass this
+warning automatically. If you prefer not to bypass the warning, you can set \code{adjust_link = FALSE}
+In this case, the function will give a warning and ask you to download the object manually.
+
+The downloaded objects do not contain viruses. The way they have been created,
+uploaded as well as how the web links are added to the \link[=sourceDataFrame]{source data.frame}
+can be reconstructed with the \emph{populate_\if{html}{\out{<location>}}} scripts provided on
+the \href{https://github.com/theMILOlab/SPATAData}{SPATAData repository} on github under \emph{/scripts/}.
+}
+
 \examples{
 
-# downloads three spata objects and
-# stores them as "spata_data/275_T.RDS", "spata_data/313_T.RDS" etc.
+# downloads three objects and
+# saves them as "spata_objects/UKF275T.RDS", "spata_objects/UKF313t.RDS", ... etc.
 
   downloadSpataObjects(
-    sample_names = ("275_T", "313_T", "334_T"),
-    folder = "spata_data"
+    sample_names = c("UKF275T", "UKF313T", "UKF334T"),
+    folder = "spata_objects" # the folder in which to save the files
    )
 
 }

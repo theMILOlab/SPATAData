@@ -10,7 +10,7 @@ addSample(source_df = sourceDataFrame(), update)
 \item{source_df}{The source data.frame. Defaults to the current \code{source_df}
 of the package.}
 
-\item{update}{Logical. Use with caution! If TRUE, the updated output data.frame 
+\item{update}{Logical. Use with caution! If TRUE, the updated output data.frame
 will replace the current \code{source_df} of the package!}
 }
 \value{
@@ -19,3 +19,4 @@ The updated data.frame is returned invisibly.
 \description{
 Adds a new sample to the source data.frame.
 }
+\keyword{internal}

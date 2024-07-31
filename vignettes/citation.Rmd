@@ -1,0 +1,43 @@
+---
+title: "Citation"
+output:
+  html_document:
+    theme: flatly
+    df_print: paged
+    css: "markdown-styles.css"
+    toc: true
+    toc_depth: 3
+
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE, fig.show = "hold", out.width = "50%", message = FALSE, warning = FALSE)
+
+```
+
+As mentioned in the introduction, many samples provided here are not owned by us, the MILOlab. We have collected these samples from openly accessible sources and curated them to offer more example data sets for use with SPATA2. If you use these data sets, please ensure that you cite the corresponding papers correctly. When you download a `SPATA2` object using SPATAData, the citation information is stored in the object's metadata, specifically in the `@meta_sample` slot alongside all the meta-information you find in the source data frame. You can easily obtain the citation instructions via the `getCitation()` function.
+
+For instance: 
+
+```{r}
+library(SPATAData)
+
+# download two example objects
+object_heart <- downloadSpataObject(sample_name = "ACH0010")
+object_gbm <- downloadSpataObject(sample_name = "UKF242T")
+
+# filter directly by sample_name
+sourceDataFrame(sample_name %in% c("ACH0010", "UKF242T"))
+
+```
+This is how to obtain the citaiton instructions. If you encounter any difficulties or mistakes regarding citation instructions please raise an issue on the github page of SPATAData.
+
+```{r eval = T }
+# cite Kuppe et al. 2022
+getCitation(object_heart)
+
+# cite Ravi et al. 2022
+getCitation(object_gbm)
+
+```
