@@ -6,6 +6,7 @@ library(glue)
 library(laborga)
 library(SPATA2) #version >=3.0.0
 library(tidyverse)
+library(pryr)
 load_all()
 
 

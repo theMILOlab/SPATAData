@@ -1,0 +1,21 @@
+---
+title: "Newslog"
+output:
+  html_document:
+    theme: flatly
+    df_print: paged
+    css: "markdown-styles.css"
+    toc: true
+    toc_depth: 3
+
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE, fig.show = "hold", out.width = "50%", message = FALSE, warning = FALSE)
+
+```
+
+
+# SPATAData v.0.0.0.900 -> v1.0.0
+We are excited to release SPATAData v1.0.0. The package aims to facilitate the distribution of spatial multi-omic data sets from a variety of platforms as well as publications. The downloaded objects are compatible with our newest release of SPATA2 v3.0.0. 

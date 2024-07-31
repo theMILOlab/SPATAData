@@ -456,10 +456,15 @@ create_subfolder(subfolder)
 
 dir_main <- "/Users/heilandr/lab/data/spatial_seq/raw/10XVisium/10X_example_data_sets_VisiumLarge"
 
-all_folders <- list.files(dir_main, full.names = T)
+all_folders <- list.files(dir_main, full.names = T) %>% str_subset("Glioblastoma", negate = T)
 
-for(folder in all_folders){
+organs <- c("Colon", "Kidney", "Lung", "Ovary")
+pathology <- c("tumor", NA, "tumor", "tumor")
+
+open_overview_pdf(subfolder)
+for(i in seq_along(all_folders)){
   
+  folder <- all_folders[i]
   sample_name <- confuns::str_extract_after(folder, "VisiumLarge\\/")
   
   object <- 
@@ -471,14 +476,107 @@ for(folder in all_folders){
   meta_data <- list()
   meta_data$donor_species <- "Homo sapiens"
   meta_data$institution <- "10X Genomics"
-  meta_data$organ <- "Colon"
-  meta_data$pathology <- "tumor"
+  meta_data$organ <- organs[i]
+  meta_data$pathology <- pathology[i]
   meta_data$platform <- "VisiumLarge"
   
   object <- addSampleMetaData(object, meta_data = meta_data)
   
+  dir <- file.path("spata2v3_objects", subfolder, str_c(sample_name, ".RDS"))
+  object <- setSpataDir(object, dir)
+  
+  saveSpataObject(object)
+  
+  plot_overview(object)
+  
 }
+dev.off()
 
+# 10X Visium example data sets GP -----------------------------------------
+subfolder <- "10X_example_data_sets_GP"
+create_subfolder(subfolder)
+
+main_dir <- "/Users/heilandr/lab/data/spatial_seq/raw/10XVisium/10X_example_data_sets_GeneAndProtein"
+
+all_folders <- list.files(main_dir, full.names = T)
+organs <- c("Breast", "Cerebrum", "Tonsil")
+histo_class <- c(NA, "Glioblastoma", NA)
+
+open_overview_pdf(subfolder)
+for(i in seq_along(all_folders)){
+  
+  folder <- all_folders[i]
+  
+  sample_name <- confuns::str_extract_after(folder, "GeneAndProtein\\/")
+  
+  sample_name <- stringr::str_c(sample_name, "GP")
+  
+  object <- initiateSpataObjectVisium(sample_name, directory_visium = folder, img_ref = "hires")
+  object <- loadImages(object)
+  
+  # add meta data
+  meta_data <- list()
+  meta_data$donor_species <- "Homo sapiens"
+  meta_data$grade <- ifelse(organs[i] == "Cerebrum", "IV", NA_character_)
+  meta_data$histo_class <- histo_class[i]
+  meta_data$institution <- "10X Genomics"
+  meta_data$organ <- organs[i]
+  meta_data$pathology <- c("tumor", "tumor", NA)[i]
+  meta_data$platform <- object@platform
+  
+  object <- addSampleMetaData(object, meta_data = meta_data)
+  
+  dir <- file.path("spata2v3_objects", subfolder, str_c(sample_name, ".RDS"))
+  saveSpataObject(object, dir = dir)
+  
+  plot_overview(object)
+  
+}
+dev.off()
+
+
+# 10X example data sets Visium HD -----------------------------------------
+
+subfolder <- "10X_example_data_sets_VHD"
+create_subfolder(subfolder)
+
+main_dir <- "/Users/heilandr/lab/data/spatial_seq/raw/10XVisiumHD/10X_example_data_sets_VHD"
+
+all_folders <- list.files(main_dir, full.names = T)
+
+open_overview_pdf(subfolder)
+for(i in seq_along(all_folders)){
+  
+  folder <- all_folders[i]
+  sample_name <- confuns::str_extract_after(folder, "10X_example_data_sets_VHD\\/")
+  
+  object <- 
+    initiateSpataObjectVisiumHD(
+      directory_visium = folder, 
+      sample_name = sample_name, 
+      img_ref = "hires", 
+      img_active = "lowres"
+    )
+  
+  object <- loadImages(object)
+  
+  meta_data <- list()
+  meta_data$donor_species <- "Homo sapiens"
+  meta_data$organ <- c("Lung", "Pancreas")[i]
+  meta_data$institution <- "10X Genomics"
+  meta_data$pathology <- c("tumor", NA)[i]
+  
+  object <- addSampleMetaData(object, meta_data = meta_data)
+  
+  dir <- file.path("spata2v3_objects", subfolder, str_c(sample_name, ".RDS"))
+  object <- setSpataDir(object, dir)
+  
+  saveSpataObject(object)
+  
+  plot_overview(object)
+  
+}
+dev.off()
 
 # Regal et al. 2023 -------------------------------------------------------
 
@@ -642,8 +740,10 @@ meta_df <- meta_df[1:21, ]
 meta_df$organ_part[meta_df$organ_side == "bifrontal"] <- "frontal"
 meta_df$organ_side[meta_df$organ_side == "bifrontal"] <- "both"
 
+main_dir <- "/Users/heilandr/lab/data/spatial_seq/raw/10XVisium/Greenwald_et_al_2024"
+
 all_dirs <- 
-  list.files("/Users/heilandr/lab/data/spatial_seq/raw/10XVisium/Greenwald_et_al_2024", full.names = T) %>%
+  list.files(main_dir, full.names = T) %>%
   str_subset(".csv$", negate = T) %>% 
   str_subset("citation", negate = T)
 
@@ -1073,3 +1173,95 @@ for(folder in all_folders[2:length(all_folders)]){
 }
 dev.off()
 
+
+# Akeret et al. 2022 -------------------------------------------------------
+
+subfolder <- "Akeret_et_al_2022"
+create_subfolder(subfolder)
+
+main_dir <- "/Users/heilandr/lab/data/spatial_seq/raw/10XVisium/Akeret_et_al_2022"
+
+object <- 
+  initiateSpataObjectVisium(sample_name = "MouseBrainHemeInjection", directory_visium = main_dir, img_ref = "hires")
+
+object <- loadImages(object)
+
+inj_df <-
+  read_csv(file.path(main_dir, "heme_1000_injection_site.csv")) %>% 
+  dplyr::rename(barcodes = Barcode) %>% 
+  mutate(injection_site = if_else(is.na(injection_site), "normal", "heme") %>% as.factor())
+
+anatomy_df<- 
+  read_csv(file.path(main_dir, "heme_1000_anatomy.csv")) %>% 
+  dplyr::rename(barcodes = Barcode) %>% 
+  mutate(anatomy = as.factor(anatomy))
+
+object <- addFeatures(object, inj_df)
+object <- addFeatures(object, anatomy_df)
+
+getFeatureNames(object)
+
+meta_data <- list()
+meta_data$comment <- "contains grouping variables 'injection_site' and 'anatomy' from the original publication"
+meta_data$donor_species <- "Mus musculus"
+meta_data$institution <- "University Hospital Zurich"
+meta_data$organ <- "Brain"
+meta_data$pathology <- "bleeding_model"
+meta_data$platform <- object@platform
+meta_data$pub_citation <- readRDS(file.path(main_dir, "citation.RDS"))
+meta_data$workgroup <- "Primelab"
+
+object <- addSampleMetaData(object, meta_data = meta_data)
+
+dir <- file.path("spata2v3_objects", subfolder, str_c(object@sample, ".RDS"))
+saveSpataObject(object, dir)
+
+
+
+
+# Maynard et al 2021 ------------------------------------------------------
+
+subfolder <- "Maynard_et_al_2021"
+create_subfolder(subfolder)
+
+main_dir <- "/Users/heilandr/lab/data/spatial_seq/raw/10XVisium/Maynard_et_al_2021"
+
+all_folders <- 
+  list.files(path = main_dir, full.names = T) %>% 
+  str_subset(pattern = "[0-9]$")
+
+open_overview_pdf(subfolder)
+for(folder in all_folders){
+  
+  sample_name <- confuns::str_extract_after(folder, pattern = "Maynard_et_al_2021\\/")
+  
+  object <- 
+    initiateSpataObjectVisium(
+      sample_name = sample_name, 
+      directory_visium = folder, 
+      img_ref = "hires", 
+      img_active = "lowres"
+    )
+  
+  meta_data <- list()
+  meta_data$donor_species <- "Homo sapiens"
+  meta_data$histo_class <- "Cortex"
+  meta_data$institution <- "Lieber Institute for Brain Development"
+  meta_data$organ <- "Cerebrum"
+  meta_data$organ_part <- "prefrontal"
+  meta_data$pub_citation <- readRDS(file.path(main_dir, "citation.RDS"))
+  meta_data$pub_year <- 2021
+  meta_data$pub_journal <- "Nature Neuroscience"
+  
+  object <- addSampleMetaData(object, meta_data = meta_data)
+  
+  dir <- file.path("spata2v3_objects", subfolder, str_c(sample_name, ".RDS"))
+  
+  object <- setSpataDir(object, dir)
+  
+  saveSpataObject(object)
+  
+  plot_overview(object)
+  
+}
+dev.off()

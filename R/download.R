@@ -1,4 +1,41 @@
 
+adjust_gdrive_link <- function(initial_url){
+  
+  initial_response <- httr::GET(initial_url)
+  
+  if(httr::status_code(initial_response) == 200){
+    
+    html_content <- httr::content(initial_response, as = "text")
+    
+    html_page <- rvest::read_html(html_content)
+    
+    form_action <- 
+      rvest::html_node(html_page, "form#download-form") %>%
+      rvest::html_attr("action")
+    
+    params <-
+      rvest::html_nodes(html_page, "form#download-form input[type='hidden']") %>%
+      rvest::html_attrs()
+    
+    query_params <- list()
+    
+    for(param in params) {
+      
+      query_params[[param["name"]]] <- param["value"]
+      
+    }
+    
+    final_download_url <- httr::modify_url(form_action, query = query_params)
+    
+    return(final_download_url)
+    
+  } else {
+    
+    stop(glue::glue("Unable to download SPATA2 object directy. Pleaes enter this weblink directly in the browser and download manually: {initial_url}"))
+    
+  }
+  
+}
 
 
 
@@ -17,6 +54,9 @@
 #' folder in which the `SPATA2` object is saved. Defaults to the working directory.
 #' @param overwrite Logical. Must be set to `TRUE` if file directories
 #' under which downloaded files are to be saved already exist.
+#' @param adjust_link Logical value. Defaults to `TRUE`. Allows the function to adjust the link
+#' if the download fails due to Google Drive warnings. See section below
+#' for more information. 
 #' @inherit argument_dummy params
 #'
 #' @details If `file` is not `FALSE`. The downloaded `SPATA2` object is immediately saved after the download before
@@ -29,6 +69,27 @@
 #' check out [`downloadSpataObjects()`].
 #' 
 #' @export
+#' 
+#' @section Google Drive Warning:
+#' `SPATA2` objects are stored in a Google Drive repository and downloaded via their weblink as 
+#' stored in the \link[=sourceDataFrame]{source data.frame}. Often, `SPATA2` objects are too 
+#' large for the automatic Google Drive virus scan. As a result, the weblink initially leads 
+#' to a webpage that asks if you are okay with skipping this virus scan.
+#' 
+#' In cases where the Google Drive link leads to this warning page, the function
+#' will automatically adjust the download link to bypass the warning and attempt
+#' the download again. If the adjusted download still fails, an error message is 
+#' displayed, prompting the user to manually download the file using the provided link.
+#' 
+#' Since the virus scan cannot be performed by Google Drive regardless of whether 
+#' you download it from within R or manually, the function defaults to bypass this
+#' warning automatically. If you prefer not to bypass the warning, you can set `adjust_link = FALSE`
+#' In this case, the function will give a warning and ask you to download the object manually.
+#' 
+#' The downloaded objects do not contain viruses. The way they have been created,
+#' uploaded as well as how the web links are added to the \link[=sourceDataFrame]{source data.frame} 
+#' can be reconstructed with the *populate_<location>* scripts provided on 
+#' the [SPATAData repository](https://github.com/theMILOlab/SPATAData) on github under */scripts/*.
 #'
 #' @examples
 #'
@@ -45,6 +106,7 @@
 downloadSpataObject <- function(sample_name,
                                 overwrite = FALSE,
                                 file = FALSE,
+                                adjust_link = TRUE,
                                 verbose = TRUE,
                                 ...){
 
@@ -136,10 +198,55 @@ downloadSpataObject <- function(sample_name,
     in.shiny = in_shiny
     )
 
-  downloaded_object <-
-    base::url(download_dir) %>%
-    base::readRDS()
-
+  # download the object
+  downloaded_object <- 
+    base::tryCatch({
+      
+      base::url(download_dir) %>%
+        base::readRDS()
+      
+    }, error = function(error){
+      
+      FALSE
+      
+    })
+  
+  # adjust directory to circumvent warning page of googledrive which mentions
+  # that virusscan is not possible
+  if(base::isFALSE(downloaded_object) & base::isTRUE(adjust_link)){
+    
+    confuns::give_feedback(
+      msg = "Adjusting weblink for download.", 
+      verbose = verbose
+    )
+    
+    download_dir_adj <- adjust_gdrive_link(download_dir)
+    
+    confuns::give_feedback(
+      msg = glue::glue("Trying: {download_dir_adj}."), 
+      verbose = verbose
+    )
+    
+    downloaded_object <- 
+      base::tryCatch({
+        
+        base::url(download_dir_adj) %>%
+          base::readRDS()
+        
+      }, error = function(error){
+        
+        FALSE
+        
+      })
+    
+  }
+  
+  if(base::isFALSE(downloaded_object)){
+    
+    stop(glue::glue("Unable to download SPATA2 object directy. Pleaes enter this weblink directly in the browser and download manually: {initial_url}"))
+    
+  }
+  
   confuns::give_feedback(
     msg = "Download successful.",
     verbose = verbose
@@ -180,9 +287,30 @@ downloadSpataObject <- function(sample_name,
 #' `SPATA2` objects are saved. If character, the input must be of the same length
 #' as the input for argument \code{sample_names}. If NULL, the files are named
 #' according to the sample name.
-#' @inherit downloadSpataObject params
+#' @inherit downloadSpataObject params 
 #'
 #' @return An invisible `TRUE`.
+#'
+#' @section Google Drive Warning:
+#' `SPATA2` objects are stored in a Google Drive repository and downloaded via their weblink as 
+#' stored in the \link[=sourceDataFrame]{source data.frame}. Often, `SPATA2` objects are too 
+#' large for the automatic Google Drive virus scan. As a result, the weblink initially leads 
+#' to a webpage that asks if you are okay with skipping this virus scan.
+#' 
+#' In cases where the Google Drive link leads to this warning page, the function
+#' will automatically adjust the download link to bypass the warning and attempt
+#' the download again. If the adjusted download still fails, an error message is 
+#' displayed, prompting the user to manually download the file using the provided link.
+#' 
+#' Since the virus scan cannot be performed by Google Drive regardless of whether 
+#' you download it from within R or manually, the function defaults to bypass this
+#' warning automatically. If you prefer not to bypass the warning, you can set `adjust_link = FALSE`
+#' In this case, the function will give a warning and ask you to download the object manually.
+#' 
+#' The downloaded objects do not contain viruses. The way they have been created,
+#' uploaded as well as how the web links are added to the \link[=sourceDataFrame]{source data.frame} 
+#' can be reconstructed with the *populate_<location>* scripts provided on 
+#' the [SPATAData repository](https://github.com/theMILOlab/SPATAData) on github under */scripts/*.
 #'
 #' @export
 #'
@@ -200,6 +328,7 @@ downloadSpataObjects <- function(sample_names,
                                  files = NULL,
                                  folder = base::getwd(),
                                  overwrite = FALSE,
+                                 adjust_link = TRUE,
                                  verbose = TRUE,
                                  ...){
 
@@ -289,29 +418,14 @@ downloadSpataObjects <- function(sample_names,
       .f = purrr::safely(
         .f = function(sample_name, file){
 
-          download_dir <-
-            dplyr::filter(source_df, sample_name == {{sample_name}}) %>%
-            dplyr::pull(web_link)
-
-          confuns::give_feedback(
-            msg = glue::glue("Downloading sample {sample_name} from '{download_dir}'."),
-            verbose = verbose,
-            in.shiny = in_shiny
+          object <- 
+            downloadSpataObject(
+              sample_name = sample_name, 
+              adjust_link = adjust_link
             )
-
-          # download and save immediately
-          base::url(download_dir) %>%
-            base::readRDS() %>%
-            {if(base::isTRUE(update)){
-
-              SPATA2::updateSpataObject(., verbose = verbose)
-
-            } else {
-
-              .
-
-            }} %>%
-            saveSpataObject(object = ., dir = file, verbose = verbose)
+          
+          object <- 
+            saveSpataObject(object = object, dir = file, verbose = verbose)
 
           return(TRUE)
 
