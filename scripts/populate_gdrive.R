@@ -31,7 +31,6 @@ n_need_upd <- sum(overview_df$needs_update)
 }
 
 # 5. iterate over samples that need to be updated
-
 if(n_need_upd != 0){
   
   update_df <- dplyr::filter(overview_df, needs_update)
@@ -90,7 +89,7 @@ if(n_not_upl != 0){
     
     instr <- upload_df[i,]
     
-    confuns::give_feedback(msg = glue("Uploading sample {instr$sample_name}."))
+    confuns::give_feedback(msg = glue("Uploading sample {instr$sample_name}. {i}/{n_not_upl}"))
     
     googledrive::drive_upload(
       media = instr$dir_local, 

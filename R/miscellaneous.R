@@ -432,45 +432,62 @@ load_data_file <- function(directory){
 #' @title SPATAData source data.frame
 #'
 #' @description Access the source data.frame which contains information about 
-#' various spatial transcriptomic experiments .
+#' various spatial transcriptomic experiments. Use `...` to subset according
+#' to [`dplyr::filter()`].
+#' 
+#' @inherit dplyr::filter params
+#' @param .rm_na_cols Logical value. Decides whether columns of the output data.frame
+#' that contain only missing values are removed. Defaults to `TRUE` if `...`
+#' contains any subset instructions. Else, defaults to `FALSE`. Specifying the input
+#' forces the respective behaviour.
 #' 
 #' @return Data.frame in which each row corresponds to a spatial data set stored
-#' in a `SPATA2` object.
+#' in a `SPATA2` object. The following meta variables provide additional information. 
+#'  
+#' \itemize{
+#'   \item{**sample_name**}{: Character. Name of the sample and its unique identifier.}
+#'   \item{**comment**}{: Character. Additional comments about the sample.}
+#'   \item{**donor_id**}{: Character. Unique identifier for the donor.}
+#'   \item{**donor_species**}{: Character. Species of the donor.}
+#'   \item{**grade**}{: Character. Grade of the sample.}
+#'   \item{**grade_sub**}{: Character. Sub-grade of the sample.}
+#'   \item{**histo_class**}{: Character. Histological classification.}
+#'   \item{**histo_class_sub**}{: Character. Sub-classification of the histological class.}
+#'   \item{**institution**}{: Character. Institution where the sample was collected.}
+#'   \item{**organ**}{: Character. Organ from which the sample was taken.}
+#'   \item{**organ_part**}{: Character. Specific part of the organ from which the sample was taken.}
+#'   \item{**pathology**}{: Character. Pathological state of the sample.}
+#'   \item{**platform**}{: Character. \link[=spatial_methods]{Platform} used for the experiment.}
+#'   \item{**pub_citation**}{: Character. Citation for the publication related to the sample.}
+#'   \item{**pub_doi**}{: Character. DOI of the publication related to the sample.}
+#'   \item{**pub_journal**}{: Character. Journal where the related publication was published.}
+#'   \item{**pub_year**}{: Numeric. Year of publication.}
+#'   \item{**sex**}{: Character. Sex of the donor.}
+#'   \item{**side**}{: Character. Side of the organ from which the sample was taken.}
+#'   \item{**tags**}{: Character. Tags related to the sample.}
+#'   \item{**tissue_age**}{: Numeric. Age of the tissue in years.}
+#'   \item{**workgroup**}{: Character. Workgroup or team responsible for the sample.}
+#' }
+#' 
+#' Furthermore, there are quality control and file-specific meta variables: 
 #' 
 #' \itemize{
-#'   \item{sample_name}{: Character. Name of the sample and its unique identifier.}
-#'   \item{comment}{: Character. Additional comments about the sample.}
-#'   \item{donor_id}{: Character. Unique identifier for the donor.}
-#'   \item{donor_species}{: Character. Species of the donor.}
-#'   \item{grade}{: Character. Grade of the sample.}
-#'   \item{grade_sub}{: Character. Sub-grade of the sample.}
-#'   \item{histo_class}{: Character. Histological classification.}
-#'   \item{histo_class_sub}{: Character. Sub-classification of the histological class.}
-#'   \item{institution}{: Character. Institution where the sample was collected.}
-#'   \item{lm_source}{: Date-time. Last instance when the row of the source data.frame was modified.}
-#'   \item{organ}{: Character. Organ from which the sample was taken.}
-#'   \item{organ_part}{: Character. Specific part of the organ from which the sample was taken.}
-#'   \item{pathology}{: Character. Pathological state of the sample.}
-#'   \item{platform}{: Character. Platform used for the experiment.}
-#'   \item{pub_citation}{: Character. Citation for the publication related to the sample.}
-#'   \item{pub_doi}{: Character. DOI of the publication related to the sample.}
-#'   \item{pub_journal}{: Character. Journal where the related publication was published.}
-#'   \item{pub_year}{: Numeric. Year of publication.}
-#'   \item{sex}{: Character. Sex of the donor.}
-#'   \item{side}{: Character. Side of the organ from which the sample was taken.}
-#'   \item{tags}{: Character. Tags related to the sample.}
-#'   \item{tissue_age}{: Numeric. Age of the tissue in years.}
-#'   \item{web_link}{: Character. Link to an object or additional data related to the sample for downloads.}
-#'   \item{workgroup}{: Character. Workgroup or team responsible for the sample.}
-#'   \item{mean_counts}{: Numeric. Mean counts of the measurements.}
-#'   \item{median_counts}{: Numeric. Median counts of the measurements.}
-#'   \item{modality_gene}{: Logical. Indicates if the modality includes genes.}
-#'   \item{modality_metabolite}{: Logical. Indicates if the modality includes metabolites.}
-#'   \item{modality_protein}{: Logical. Indicates if the modality includes proteins.}
-#'   \item{n_obs}{: Numeric. Number of observations.}
-#'   \item{n_tissue_sections}{: Numeric. Number of tissue sections.}
-#'   \item{obs_unit}{: Character. Unit of observation.}
+#'   \item{**lm_source**}{: Date-time. Last instance when the corresponding `SPATA2` object was modified.}
+#'   \item{**mean_counts**}{: Numeric. Mean counts of the measurements.}
+#'   \item{**median_counts**}{: Numeric. Median counts of the measurements.}
+#'   \item{**modality_gene**}{: Logical. Indicates if the modality includes genes.}
+#'   \item{**modality_metabolite**}{: Logical. Indicates if the modality includes metabolites.}
+#'   \item{**modality_protein**}{: Logical. Indicates if the modality includes proteins.}
+#'   \item{**n_obs**}{: Numeric. Number of observations.}
+#'   \item{**n_tissue_sections**}{: Numeric. Number of tissue sections as identified by [`identifyTissueOutline()`] with default parameters.}
+#'   \item{**obj_size**}{: Storage size of the object.}
+#'   \item{**obs_unit**}{: Character. Unit of observation.}
+#'   \item{**web_link**}{: Character. Weblinkg with which to download the `SPATA2` object.}
 #' }
+
+#' 
+#' @seealso [`downloadSpataObject()`], [`downloadSpataObjects()`] for easy download of 
+#' the filtering results.
 #' 
 #' @examples
 #' 
@@ -485,11 +502,13 @@ load_data_file <- function(directory){
 #' 
 #' # 1. obtain glioblastoma samples from the temporal lobe
 #' 
-#' sdf_gbm <- filter(sdf, histo_class == "Glioblastoma" & organ_part == "temporal")
+#' temporal_gbms <- sourceDataFrame(histo_class == "Glioblastoma" & organ_part == "temporal")
 #' 
-#' gbm_samples <- sdf_gbm$sample_name
+#' # show results
+#' temporal_gbms
 #' 
-#' print(gbm_samples)
+#' # get sample names
+#' temporal_gbms$sample_names
 #' 
 #' # downlaod as collection
 #' downloadSpataObjects(sample_names = gbm_samples, folder = "spata_objects/gbm") 
@@ -497,19 +516,77 @@ load_data_file <- function(directory){
 #' # 2. obtain data from specific publications
 #' 
 #' sdf_kuppe <- 
-#'  filter(sdf, str_detect(pub_citation, pattern = "^Kuppe") & pub_journal == "Nature")
+#'  sourceDataFrame(str_detect(pub_citation, pattern = "^Kuppe"))
 #'  
 #' kuppe_samples <- sdf_kuppe$sample_name
 #' 
-#' print(kuppe_samples)
+#' print(kuppe_samples)  
 #'
 #' @export
 #'
-sourceDataFrame <- function(){
+
+sourceDataFrame <- function(..., .rm_na_cols = NULL) {
   
-  source_df
+  filter_expr <- rlang::enquos(...)
   
+  if(base::is.null(.rm_na_cols) & !purrr::is_empty(filter_expr)){
+    
+    .rm_na_cols <- TRUE
+    
+  }
+  
+  out_df <- dplyr::filter(source_df, !!!filter_expr)
+  
+  if(base::isTRUE(.rm_na_cols)) {
+    
+    out_df <- purrr::discard(out_df, .p = ~ base::all(base::is.na(.x)))
+    
+  }
+  
+  return(out_df)
 }
+
+      
+#' @export                    
+general_meta_vars <- c(
+  "sample_name",
+  "comment",
+  "donor_id",
+  "donor_species",
+  "grade",
+  "grade_sub",
+  "histo_class",
+  "histo_class_sub",
+  "institution",
+  "organ",
+  "organ_part",
+  "pathology",
+  "platform",
+  "pub_citation",
+  "pub_doi",
+  "pub_journal",
+  "pub_year",
+  "sex",
+  "side",
+  "tags",
+  "tissue_age",
+  "workgroup"
+)
+
+#' @export
+qc_meta_vars <- c(
+  "lm_source",
+  "mean_counts",
+  "median_counts",
+  "modality_gene",
+  "modality_metabolite",
+  "modality_protein",
+  "n_obs",
+  "n_tissue_sections",
+  "obj_size",
+  "obs_unit",
+  "web_link"
+)
 
 
 

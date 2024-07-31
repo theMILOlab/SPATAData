@@ -57,7 +57,7 @@ sdf <-
         
       }
       
-      if(continue){
+      if(TRUE){
         
         confuns::give_feedback(msg = glue::glue("Reading {dir}."))
         
@@ -76,6 +76,8 @@ sdf <-
         df$modality_gene <- containsModality(object, modality = "gene")
         df$modality_metabolite <- containsModality(object, modality = "metabolite")
         df$modality_protein <- containsModality(object, modality = "protein")
+        
+        df$obj_size <- pryr::object_size(object)
         
         df$n_obs <- nObs(object)
         df$n_tissue_sections <- nTissueSections(object)
