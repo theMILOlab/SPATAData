@@ -27,7 +27,7 @@ in a \code{SPATA2} object. The following meta variables provide additional infor
 \item{\strong{comment}}{: Character. Additional comments about the sample.}
 \item{\strong{donor_id}}{: Character. Unique identifier for the donor.}
 \item{\strong{donor_species}}{: Character. Species of the donor.}
-\item{\strong{grade}}{: Character. Grade of the sample.}
+\item{\strong{grade}}{: Character. Grade of the sample in case of histologically classified malignancies.}
 \item{\strong{grade_sub}}{: Character. Sub-grade of the sample.}
 \item{\strong{histo_class}}{: Character. Histological classification.}
 \item{\strong{histo_class_sub}}{: Character. Sub-classification of the histological class.}
@@ -40,7 +40,7 @@ in a \code{SPATA2} object. The following meta variables provide additional infor
 \item{\strong{pub_doi}}{: Character. DOI of the publication related to the sample.}
 \item{\strong{pub_journal}}{: Character. Journal where the related publication was published.}
 \item{\strong{pub_year}}{: Numeric. Year of publication.}
-\item{\strong{sex}}{: Character. Sex of the donor.}
+\item{\strong{sex}}{: Character. Sex of the donor. Either \emph{female} or \emph{male}.}
 \item{\strong{side}}{: Character. Side of the organ from which the sample was taken.}
 \item{\strong{tags}}{: Character. Tags related to the sample.}
 \item{\strong{tissue_age}}{: Numeric. Age of the tissue in years.}

@@ -449,7 +449,7 @@ load_data_file <- function(directory){
 #'   \item{**comment**}{: Character. Additional comments about the sample.}
 #'   \item{**donor_id**}{: Character. Unique identifier for the donor.}
 #'   \item{**donor_species**}{: Character. Species of the donor.}
-#'   \item{**grade**}{: Character. Grade of the sample.}
+#'   \item{**grade**}{: Character. Grade of the sample in case of histologically classified malignancies.}
 #'   \item{**grade_sub**}{: Character. Sub-grade of the sample.}
 #'   \item{**histo_class**}{: Character. Histological classification.}
 #'   \item{**histo_class_sub**}{: Character. Sub-classification of the histological class.}
@@ -462,7 +462,7 @@ load_data_file <- function(directory){
 #'   \item{**pub_doi**}{: Character. DOI of the publication related to the sample.}
 #'   \item{**pub_journal**}{: Character. Journal where the related publication was published.}
 #'   \item{**pub_year**}{: Numeric. Year of publication.}
-#'   \item{**sex**}{: Character. Sex of the donor.}
+#'   \item{**sex**}{: Character. Sex of the donor. Either *female* or *male*.}
 #'   \item{**side**}{: Character. Side of the organ from which the sample was taken.}
 #'   \item{**tags**}{: Character. Tags related to the sample.}
 #'   \item{**tissue_age**}{: Numeric. Age of the tissue in years.}

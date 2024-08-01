@@ -9,6 +9,7 @@ downloadSpataObject(
   overwrite = FALSE,
   file = FALSE,
   adjust_link = TRUE,
+  timeout = 600,
   verbose = TRUE,
   ...
 )
@@ -29,6 +30,9 @@ is skipped and the object is simply returned.}
 \item{adjust_link}{Logical value. Defaults to \code{TRUE}. Allows the function to adjust the link
 if the download fails due to Google Drive warnings. See section below
 for more information.}
+
+\item{timeout}{Numeric value. Indicates the number of seconds the function has time
+to download the object before the process is aborted. Defaults to 600s (10min).}
 
 \item{verbose}{Logical. If set to TRUE informative messages regarding
 the computational progress will be printed.

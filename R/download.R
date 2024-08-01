@@ -31,7 +31,7 @@ adjust_gdrive_link <- function(initial_url){
     
   } else {
     
-    stop(glue::glue("Unable to download SPATA2 object directy. Pleaes enter this weblink directly in the browser and download manually: {initial_url}"))
+    stop(glue::glue("Unable to download SPATA2 object directy. Pleae enter this weblink directly in the browser and download manually: {initial_url}"))
     
   }
   
@@ -57,6 +57,8 @@ adjust_gdrive_link <- function(initial_url){
 #' @param adjust_link Logical value. Defaults to `TRUE`. Allows the function to adjust the link
 #' if the download fails due to Google Drive warnings. See section below
 #' for more information. 
+#' @param timeout Numeric value. Indicates the number of seconds the function has time
+#' to download the object before the process is aborted. Defaults to 600s (10min).
 #' @inherit argument_dummy params
 #'
 #' @details If `file` is not `FALSE`. The downloaded `SPATA2` object is immediately saved after the download before
@@ -107,6 +109,7 @@ downloadSpataObject <- function(sample_name,
                                 overwrite = FALSE,
                                 file = FALSE,
                                 adjust_link = TRUE,
+                                timeout = 600,
                                 verbose = TRUE,
                                 ...){
 
@@ -197,6 +200,8 @@ downloadSpataObject <- function(sample_name,
     verbose = verbose, 
     in.shiny = in_shiny
     )
+  
+  if(base::is.numeric(timeout)){ options(timeout = timeout)}
 
   # download the object
   downloaded_object <- 
@@ -243,7 +248,7 @@ downloadSpataObject <- function(sample_name,
   
   if(base::isFALSE(downloaded_object)){
     
-    stop(glue::glue("Unable to download SPATA2 object directy. Pleaes enter this weblink directly in the browser and download manually: {initial_url}"))
+    stop(glue::glue("Unable to download SPATA2 object directy. Pleaes enter this weblink directly in the browser and download manually: {download_dir}"))
     
   }
   
@@ -329,6 +334,7 @@ downloadSpataObjects <- function(sample_names,
                                  folder = base::getwd(),
                                  overwrite = FALSE,
                                  adjust_link = TRUE,
+                                 timeout = 600,
                                  verbose = TRUE,
                                  ...){
 
@@ -410,7 +416,7 @@ downloadSpataObjects <- function(sample_names,
     stop(glue::glue("Invalid storage directories. Can not create {ref1} '{ref2}'"))
 
   }
-
+  
   out <-
     purrr::map2(
       .x = sample_names,
@@ -421,7 +427,8 @@ downloadSpataObjects <- function(sample_names,
           object <- 
             downloadSpataObject(
               sample_name = sample_name, 
-              adjust_link = adjust_link
+              adjust_link = adjust_link, 
+              timeout = timeout
             )
           
           object <- 

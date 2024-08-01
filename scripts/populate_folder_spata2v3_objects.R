@@ -565,6 +565,7 @@ for(i in seq_along(all_folders)){
   meta_data$organ <- c("Lung", "Pancreas")[i]
   meta_data$institution <- "10X Genomics"
   meta_data$pathology <- c("tumor", NA)[i]
+  meta_data$platform = "VisiumHD"
   
   object <- addSampleMetaData(object, meta_data = meta_data)
   
