@@ -57,7 +57,7 @@ sdf <-
         
       }
       
-      if(TRUE){
+      if(continue){
         
         confuns::give_feedback(msg = glue::glue("Reading {dir}."))
         
