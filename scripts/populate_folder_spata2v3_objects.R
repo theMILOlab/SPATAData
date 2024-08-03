@@ -277,8 +277,6 @@ dir.create("spata2v3_objects/Ravi_et_al_2022")
 
 mdf <- readRDS("/Users/heilandr/lab/data/spatial_seq/meta/spatial_seq_meta.RDS")
 
-source_df$patient_id %>% str_subset(pattern= "UKF") %>% str_c(collapse = "', '") %>% str_c("c('", ., "')")
-
 patient_ids <- 
   c('#275UKF', '#270UKF', '#269UKF', '#268UKF', '#266UKF', '#265UKF', '#265UKF', '#262UKF', '#260UKF', '#259UKF',
     '#259UKF', '#256UKF', '#256UKF', '#255UKF', '#251UKF', '#248UKF', '#248UKF', '#243UKF', '#242UKF', '#242UKF',
@@ -456,7 +454,7 @@ create_subfolder(subfolder)
 
 dir_main <- "/Users/heilandr/lab/data/spatial_seq/raw/10XVisium/10X_example_data_sets_VisiumLarge"
 
-all_folders <- list.files(dir_main, full.names = T) %>% str_subset("Glioblastoma", negate = T)
+all_folders <- list.files(dir_main, full.names = T) 
 
 organs <- c("Colon", "Kidney", "Lung", "Ovary")
 pathology <- c("tumor", NA, "tumor", "tumor")
@@ -795,7 +793,9 @@ for(main_dir in all_dirs){
       
     } else {
       
-      coords_df <- read_coords_visium(dir_coords)
+      coords_df <- 
+        read_coords_visium(dir_coords) %>% 
+        dplyr::filter(in_tissue == 1)
       
     }
     
@@ -959,7 +959,7 @@ for(dir_sample in dir_samples){
     
   } else {
     
-    coords_df <- read_coords_visium(dir_coords)
+    coords_df <- read_coords_visium(dir_coords) %>% filter(in_tissue == 1)
     
   }
   
@@ -1141,7 +1141,7 @@ for(folder in all_folders[2:length(all_folders)]){
     df <- 
       readRDS(ann_dir) %>% 
       as_tibble() %>% 
-      rename(barcodes = spot_id)
+      dplyr::rename(barcodes = spot_id)
     
     object <- addFeatures(object, feature_df = df, feature_names = c("seurat_clusters", "Pathologist_Annotations"))
     object@meta_obs$Pathologist_Annotations <- as.factor(object@meta_obs$Pathologist_Annotations)
