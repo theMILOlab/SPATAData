@@ -65,6 +65,8 @@ sdf <-
         
         df <- getSampleMetaData(object, as_list = F, source_only = T, na_rm = F)
         
+        df$platform <- object@platform
+        
         # populate slots 
         count_mtr <- getCountMatrix(object) %>% as.matrix()
         

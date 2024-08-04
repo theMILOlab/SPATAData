@@ -456,8 +456,8 @@ dir_main <- "/Users/heilandr/lab/data/spatial_seq/raw/10XVisium/10X_example_data
 
 all_folders <- list.files(dir_main, full.names = T) 
 
-organs <- c("Colon", "Kidney", "Lung", "Ovary")
-pathology <- c("tumor", NA, "tumor", "tumor")
+organs <- c("Colon", "Cerebrum", "Kidney", "Lung", "Ovary")
+pathology <- c("tumor", "tumor", NA, "tumor", "tumor")
 
 open_overview_pdf(subfolder)
 for(i in seq_along(all_folders)){
@@ -477,6 +477,12 @@ for(i in seq_along(all_folders)){
   meta_data$organ <- organs[i]
   meta_data$pathology <- pathology[i]
   meta_data$platform <- "VisiumLarge"
+  
+  if(meta_data$organ == "Cerebrum"){
+    
+    meta_data$histo_class <- "Glioblastoma"
+    
+  }
   
   object <- addSampleMetaData(object, meta_data = meta_data)
   
@@ -1055,6 +1061,7 @@ for(folder in all_folders){
   meta_data$donor_species <- "Homo sapiens"
   meta_data$grade <- "IV"
   meta_data$histo_class <- mdf$histo_class
+  meta_data$comment <- as.character(mdf[["Integrated diagnosis"]])
   meta_data$institution <- "West China Hospital"
   meta_data$organ <- mdf$organ
   meta_data$organ_part <- mdf$organ_part
