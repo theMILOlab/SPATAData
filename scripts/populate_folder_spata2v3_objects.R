@@ -1273,3 +1273,170 @@ for(folder in all_folders){
   
 }
 dev.off()
+
+
+# Vizgen MERFISH example data sets --------------------------------
+
+subfolder <- "Vizgen_example_data_sets_Cancer"
+create_subfolder(subfolder)
+
+dir_main <- "/Users/heilandr/lab/data/spatial_seq/raw/MERFISH/MERSCOPE-FFPE-Human-Immuno-oncology"
+
+all_folders <- list.files(dir_main, full.names = T) 
+
+organs <- c("Breast", "Colon", "Colon", "Liver", "Liver", "Lung", "Lung", "Skin", "Skin", "Ovary", "Ovary", "Ovary", "Ovary", "Prostate", "Prostate", "Uterus", "Uterus", "Uterus")
+
+open_overview_pdf(subfolder)
+for(i in seq_along(all_folders)){
+  
+  folder <- all_folders[i]
+  sample_name <- dplyr::last(stringr::str_split(folder, "/")[[1]])
+  
+  object <- 
+    initiateSpataObjectMERFISH(
+      directory_merfish = folder, 
+      sample_name = sample_name
+    )
+  
+  meta_data <- list()
+  meta_data$donor_species <- "Homo sapiens"
+  meta_data$institution <- "Vizgen"
+  meta_data$organ <- organs[i]
+  meta_data$pathology <- "tumor"
+  meta_data$platform <- "MERFISH"
+  meta_data$pub_citation <- "Vizgen MERFISH FFPE Human Immuno-oncology Data Set,  May 2022"
+  meta_data$download_date <- lubridate::as_datetime("2024/01/09")
+  
+  object <- addSampleMetaData(object, meta_data = meta_data)
+  
+  dir <- file.path("spata2v3_objects", subfolder, str_c(sample_name, ".RDS"))
+  object <- setSpataDir(object, dir)
+  
+  saveSpataObject(object)
+  
+  plot_overview(object)
+  
+}
+dev.off()
+
+
+subfolder <- "Vizgen_example_data_sets_MouseBrain"
+create_subfolder(subfolder)
+
+dir_main <- "/Users/heilandr/lab/data/spatial_seq/raw/MERFISH/MERSCOPE-Mouse-Brain-Receptor-Map"
+
+all_folders <- list.files(dir_main, full.names = T) 
+
+open_overview_pdf(subfolder)
+for(i in seq_along(all_folders)){
+  
+  folder <- all_folders[i]
+  sample_name <- dplyr::last(stringr::str_split(folder, "/")[[1]])
+  
+  object <- 
+    initiateSpataObjectMERFISH(
+      directory_merfish = folder, 
+      sample_name = sample_name
+    )
+  
+  meta_data <- list()
+  meta_data$donor_species <- "Mus musculus"
+  meta_data$institution <- "Vizgen"
+  meta_data$organ <- "Brain"
+  meta_data$pathology <- NA_character_
+  meta_data$platform <- "MERFISH"
+  meta_data$pub_citation <- "Vizgen MERFISH Mouse Brain Receptor Map"
+  meta_data$download_date <- lubridate::as_datetime("2024/08/19")
+  
+  object <- addSampleMetaData(object, meta_data = meta_data)
+  
+  dir <- file.path("spata2v3_objects", subfolder, str_c(sample_name, ".RDS"))
+  object <- setSpataDir(object, dir)
+  
+  saveSpataObject(object)
+  
+  plot_overview(object)
+  
+}
+dev.off()
+
+
+subfolder <- "Vizgen_example_data_sets_MouseLiver"
+create_subfolder(subfolder)
+
+dir_main <- "/Users/heilandr/lab/data/spatial_seq/raw/MERFISH/MERSCOPE-Mouse-Liver-Map"
+
+all_folders <- list.files(dir_main, full.names = T) 
+
+open_overview_pdf(subfolder)
+for(i in seq_along(all_folders)){
+  
+  folder <- all_folders[i]
+  sample_name <- dplyr::last(stringr::str_split(folder, "/")[[1]])
+  
+  object <- 
+    initiateSpataObjectMERFISH(
+      directory_merfish = folder, 
+      sample_name = sample_name
+    )
+  
+  meta_data <- list()
+  meta_data$donor_species <- "Mus musculus"
+  meta_data$institution <- "Vizgen"
+  meta_data$organ <- "Liver"
+  meta_data$pathology <- NA_character_
+  meta_data$platform <- "MERFISH"
+  meta_data$download_date <- "2024/08/21"
+  
+  object <- addSampleMetaData(object, meta_data = meta_data)
+  
+  dir <- file.path("spata2v3_objects", subfolder, str_c(sample_name, ".RDS"))
+  object <- setSpataDir(object, dir)
+  
+  saveSpataObject(object)
+  
+  plot_overview(object)
+  
+}
+dev.off()
+
+
+subfolder <- "Vizgen_example_data_sets_HumanBrain_AD"
+create_subfolder(subfolder)
+
+dir_main <- "/Users/heilandr/lab/data/spatial_seq/raw/MERFISH/MERSCOPE-1000-Gene-Panel-Human-Brain-AD"
+
+all_folders <- list.files(dir_main, full.names = T) 
+
+open_overview_pdf(subfolder)
+for(i in seq_along(all_folders)){
+  
+  folder <- all_folders[i]
+  sample_name <- dplyr::last(stringr::str_split(folder, "/")[[1]])
+  
+  object <- 
+    initiateSpataObjectMERFISH(
+      directory_merfish = folder, 
+      sample_name = sample_name
+    )
+  
+  meta_data <- list()
+  meta_data$donor_species <- "Homo sapiens"
+  meta_data$institution <- "Vizgen"
+  meta_data$organ <- "Brain"
+  meta_data$organ_part <- "Unspecified"
+  meta_data$pathology <- "AD"
+  meta_data$platform <- "MERFISH"
+  meta_data$download_date <- lubridate::as_datetime("2024/08/21")
+  
+  object <- addSampleMetaData(object, meta_data = meta_data)
+  
+  dir <- file.path("spata2v3_objects", subfolder, str_c(sample_name, ".RDS"))
+  object <- setSpataDir(object, dir)
+  
+  saveSpataObject(object)
+  
+  plot_overview(object)
+  
+}
+dev.off()

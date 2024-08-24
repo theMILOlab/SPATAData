@@ -68,10 +68,10 @@ sdf <-
         df$platform <- object@platform
         
         # populate slots 
-        count_mtr <- getCountMatrix(object) %>% as.matrix()
+        count_mtr <- getCountMatrix(object)
         
-        df$mean_counts <- mean(colSums(count_mtr), na.rm = T)
-        df$median_counts <- median(colSums(count_mtr), na.rm = T)
+        df$mean_counts <- mean(Matrix::colSums(count_mtr), na.rm = T)
+        df$median_counts <- median(Matrix::colSums(count_mtr), na.rm = T)
         
         rm(count_mtr)
         

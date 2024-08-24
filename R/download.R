@@ -113,6 +113,8 @@ downloadSpataObject <- function(sample_name,
                                 verbose = TRUE,
                                 ...){
 
+  require(SPATA2)
+  
   confuns::is_value(x = overwrite, mode = "logical")
 
   in_shiny <- base::isTRUE(list(...)[["in_shiny"]])
@@ -338,6 +340,8 @@ downloadSpataObjects <- function(sample_names,
                                  verbose = TRUE,
                                  ...){
 
+  require(SPATA2)
+  
   in_shiny <- base::isTRUE(list(...)[["in_shiny"]])
   
   source_df <- list(...)[["source_df"]]
@@ -475,29 +479,26 @@ downloadSpataObjects <- function(sample_names,
 
 #' @title Download raw data
 #'
-#' @description Downloads raw Visium10X output of samples as a .zip folder.
-#'
-#' @param sample_names Character vector. The sample names of the data
-#' to be downloaded. Use \code{validSampleNames()} to obtain all valid input options.
-#' @inherit downloadSpataObjects params
-#'
-#' @details The directory of the .zip folder is eventually created
-#' with \code{stringr::str_c(folder, "/", sample, ".zip")}. To access
-#' the data you have to unzip the folder manually.
-#'
-#' @return An invisible TRUE.
+#' @description Currently deprecated. 
+#' 
 #' @export
 #'
-downloadRawData <- function(sample_names,
-                            files = NULL,
-                            folder = base::getwd(),
-                            overwrite = FALSE,
-                            in_shiny = FALSE,
-                            verbose = TRUE, 
-                            ...){
+downloadRawData <- function(...){
+  
+  stop("This function is currently deprecated.")
+  
+}
 
+download_raw_data <- function(sample_names,
+                              files = NULL,
+                              folder = base::getwd(),
+                              overwrite = FALSE,
+                              in_shiny = FALSE,
+                              verbose = TRUE, 
+                              ...){
+  
   confuns::is_value(x = folder, mode = "character", skip.allow = TRUE, skip.val = NULL)
-
+  
   source_df <- list(...)[["source_df"]]
   
   if(base::is.null(source_df)){
@@ -521,7 +522,7 @@ downloadRawData <- function(sample_names,
     ref.opt.2 = "samples for which raw data is available",
     in.shiny = in_shiny
   )
-
+  
   if(base::is.character(files)){
     
     if(base::length(files) != base::length(sample_names)){
@@ -531,9 +532,9 @@ downloadRawData <- function(sample_names,
     }
     
   } else if(!base::dir.exists(folder)){
-
+    
     base::dir.create(folder, recursive = TRUE)
-
+    
   }
   
   if(!base::is.character(files)){
@@ -541,17 +542,17 @@ downloadRawData <- function(sample_names,
     files <- stringr::str_c(folder, "/", sample_names, ".zip")
     
   }
-
+  
   existing_files <- purrr::keep(.x = files, .p = ~ base::file.exists(.x))
-
+  
   if(base::length(existing_files) >= 1 && !base::isTRUE(overwrite)){
-
+    
     ref <- confuns::scollapse(existing_files)
-
+    
     ref2 <- confuns::adapt_reference(existing_files, sg = "exists", pl = "exist")
-
+    
     stop(glue::glue("{ref} already {ref2}. Set argument `overwrite` to TRUE to continue."))
-
+    
   }
   
   out <-
@@ -560,58 +561,58 @@ downloadRawData <- function(sample_names,
       .y = files,
       .f = purrr::safely(
         .f = function(sample, file){
-
+          
           download_dir <-
             dplyr::filter(.data = source_df, sample == {{sample}}) %>%
             dplyr::pull(link_raw)
-
+          
           confuns::give_feedback(
             msg = glue::glue("Downloading RAW data of sample '{sample}' from '{download_dir}' and saving under '{file}'."),
             verbose = verbose, 
             in.shiny = in_shiny
           )
-
+          
           downloader::download(url = download_dir, dest = file, mode = "wb")
-
+          
           confuns::give_feedback(
             msg = "Download successful.",
             verbose = TRUE
           )
-
+          
           return(TRUE)
-
+          
         },
         otherwise = FALSE
       )
     ) %>%
     purrr::set_names(sample_names)
-
+  
   failed_downloads <- purrr::discard(.x = out, .p = ~ base::is.null(.x$error))
-
+  
   for(i in base::seq_along(failed_downloads)){
-
+    
     fail <- failed_downloads[i]
-
+    
     sample <- base::names(fail)
     error <- fail[[1]]$error
-
+    
     msg <- glue::glue("Download of sample '{sample}' failed with error message: {error}")
-
+    
     confuns::give_feedback(msg = msg, verbose = verbose, in.shiny = in_shiny)
-
+    
   }
-
+  
   successful_downloads <-
     purrr::keep(.x = out, .p = ~ base::is.null(.x$error)) %>%
     base::names() %>%
     confuns::scollapse()
-
+  
   msg <- glue::glue("Successfully downloaded '{successful_downloads}'.")
   
   confuns::give_feedback(msg = msg, verbose = verbose, in.shiny = in_shiny)
-
+  
   base::invisible(TRUE)
-
+  
 }
 
 
