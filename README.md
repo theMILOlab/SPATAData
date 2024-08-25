@@ -17,6 +17,10 @@ devtools::install_github("theMILOlab/SPATAData")
 
 Downloaded `SPATA2` objects can be used within the SPATA2 package. More info: https://themilolab.github.io/SPATA2/
 
+If you used `SPATA2` or `SPATAData` for your analysis pease consider citing: 
+
+Kueckelhaus, J., Frerich, S., Kada-Benotmane, J. et al. Inferring histology-associated gene expression gradients in spatial transcriptomic studies. Nat Commun 15, 7280 (2024). https://doi.org/10.1038/s41467-024-50904-x
+
 
 
 
